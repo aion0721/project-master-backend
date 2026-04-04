@@ -11,15 +11,26 @@ import {
 import type { Member, Phase, Project, ProjectAssignment, UserProfile } from '../types/domain.js'
 
 const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
-const projectSchema = z.object({
-  projectNumber: z.string().min(1),
-  name: z.string().min(1),
-  startDate: z.string().date(),
-  endDate: z.string().date(),
-  status: workStatusSchema,
-  pmMemberId: z.string().min(1),
-  projectLink: z.string().url().nullable().optional(),
+const projectLinkSchema = z.object({
+  label: z.string().min(1),
+  url: z.string().url(),
 })
+
+const projectSchema = z
+  .object({
+    projectNumber: z.string().min(1),
+    name: z.string().min(1),
+    startDate: z.string().date(),
+    endDate: z.string().date(),
+    status: workStatusSchema,
+    pmMemberId: z.string().min(1),
+    projectLinks: z.array(projectLinkSchema).optional(),
+    projectLink: z.string().url().nullable().optional(),
+  })
+  .transform(({ projectLink, projectLinks, ...project }) => ({
+    ...project,
+    projectLinks: projectLinks ?? (projectLink ? [{ label: '案件リンク', url: projectLink }] : []),
+  }))
 
 const phaseSchema = z.object({
   id: z.string().min(1),
@@ -98,7 +109,10 @@ function cloneEntries<T>(items: T[]) {
 
 function cloneStore(store: StoreData): StoreData {
   return {
-    projects: cloneEntries(store.projects),
+    projects: cloneEntries(store.projects).map((project) => ({
+      ...project,
+      projectLinks: project.projectLinks.map((link) => ({ ...link })),
+    })),
     phases: cloneEntries(store.phases),
     members: cloneEntries(store.members),
     assignments: cloneEntries(store.assignments),

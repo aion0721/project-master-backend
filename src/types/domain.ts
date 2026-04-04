@@ -1,5 +1,10 @@
 export type WorkStatus = '未着手' | '進行中' | '完了' | '遅延'
 
+export interface ProjectLink {
+  label: string
+  url: string
+}
+
 export interface Project {
   projectNumber: string
   name: string
@@ -7,7 +12,7 @@ export interface Project {
   endDate: string
   status: WorkStatus
   pmMemberId: string
-  projectLink?: string | null
+  projectLinks: ProjectLink[]
 }
 
 export interface Phase {
@@ -49,7 +54,7 @@ export interface CreateProjectInput {
   endDate: string
   status: WorkStatus
   pmMemberId: string
-  projectLink: string | null
+  projectLinks: ProjectLink[]
 }
 
 export interface CreateMemberInput {
@@ -70,8 +75,8 @@ export interface UpdateProjectScheduleInput {
   endDate: string
 }
 
-export interface UpdateProjectLinkInput {
-  projectLink: string | null
+export interface UpdateProjectLinksInput {
+  projectLinks: ProjectLink[]
 }
 
 export interface UpdateProjectPhasesInput {

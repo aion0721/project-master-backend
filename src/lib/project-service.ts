@@ -5,11 +5,12 @@ import type {
   Member,
   Phase,
   Project,
+  ProjectLink,
   ProjectStructureAssignmentInput,
   ProjectAssignment,
   UpdateMemberInput,
   UpdatePhaseInput,
-  UpdateProjectLinkInput,
+  UpdateProjectLinksInput,
   UpdateProjectPhasesInput,
   UpdateProjectScheduleInput,
   UpdateProjectStructureInput,
@@ -38,9 +39,13 @@ function addWeeks(value: string, weeks: number) {
   return addDays(value, weeks * 7)
 }
 
-function normalizeProjectLink(projectLink: string | null | undefined) {
-  const normalized = projectLink?.trim()
-  return normalized ? normalized : null
+function normalizeProjectLinks(projectLinks: ProjectLink[]) {
+  return projectLinks
+    .map((link) => ({
+      label: link.label.trim(),
+      url: link.url.trim(),
+    }))
+    .filter((link) => link.label && link.url)
 }
 
 function getMemberById(memberId: string, members: Member[]) {
@@ -389,7 +394,7 @@ export async function createProject(input: CreateProjectInput) {
       endDate: input.endDate,
       status: input.status,
       pmMemberId: input.pmMemberId,
-      projectLink: normalizeProjectLink(input.projectLink),
+      projectLinks: normalizeProjectLinks(input.projectLinks),
     }
 
     store.projects.push(project)
@@ -508,7 +513,7 @@ export async function updateProjectSchedule(projectId: string, input: UpdateProj
   })
 }
 
-export async function updateProjectLink(projectId: string, input: UpdateProjectLinkInput) {
+export async function updateProjectLinks(projectId: string, input: UpdateProjectLinksInput) {
   return updateStore(['projects'], (store) => {
     const project = store.projects.find((item) => item.projectNumber === projectId)
 
@@ -516,7 +521,7 @@ export async function updateProjectLink(projectId: string, input: UpdateProjectL
       throw new Error('Project not found')
     }
 
-    project.projectLink = normalizeProjectLink(input.projectLink)
+    project.projectLinks = normalizeProjectLinks(input.projectLinks)
 
     return buildProjectDetailFromStore(projectId, store)
   })

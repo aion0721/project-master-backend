@@ -10,24 +10,16 @@ import {
   updateMember,
   updatePhase,
   updateProjectCurrentPhase,
-  updateProjectLink,
+  updateProjectLinks,
   updateProjectPhases,
   updateProjectSchedule,
   updateProjectStructure,
 } from '../lib/project-service.js'
 
-function isValidOptionalUrl(value: string) {
-  if (!value.trim()) {
-    return true
-  }
-
-  try {
-    new URL(value)
-    return true
-  } catch {
-    return false
-  }
-}
+const projectLinkSchema = z.object({
+  label: z.string().trim().min(1).max(100),
+  url: z.string().trim().url().max(500),
+})
 
 const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
 
@@ -46,7 +38,7 @@ const createProjectSchema = z
     endDate: z.string().date(),
     status: z.enum(['not_started', 'in_progress', 'completed', 'delayed']),
     pmMemberId: z.string().min(1),
-    projectLink: z.string().trim().max(500).optional().default(''),
+    projectLinks: z.array(projectLinkSchema).optional().default([]),
   })
 
 const createMemberSchema = z.object({
@@ -88,13 +80,9 @@ const updateProjectScheduleSchema = z
     path: ['endDate'],
   })
 
-const updateProjectLinkSchema = z
+const updateProjectLinksSchema = z
   .object({
-    projectLink: z.string().trim().max(500),
-  })
-  .refine((value) => isValidOptionalUrl(value.projectLink), {
-    message: 'projectLink must be a valid URL',
-    path: ['projectLink'],
+    projectLinks: z.array(projectLinkSchema),
   })
 
 const updateProjectPhasesSchema = z.object({
@@ -342,7 +330,7 @@ projectRoutes.patch('/projects/:projectNumber/schedule', async (c) => {
   }
 })
 
-projectRoutes.patch('/projects/:projectNumber/link', async (c) => {
+projectRoutes.patch('/projects/:projectNumber/links', async (c) => {
   const paramsSchema = z.object({
     projectNumber: z.string().min(1),
   })
@@ -353,7 +341,7 @@ projectRoutes.patch('/projects/:projectNumber/link', async (c) => {
   }
 
   const body = await c.req.json()
-  const parsedBody = updateProjectLinkSchema.safeParse(body)
+  const parsedBody = updateProjectLinksSchema.safeParse(body)
 
   if (!parsedBody.success) {
     return c.json(
@@ -366,12 +354,10 @@ projectRoutes.patch('/projects/:projectNumber/link', async (c) => {
   }
 
   try {
-    const detail = await updateProjectLink(parsedParams.data.projectNumber, {
-      projectLink: parsedBody.data.projectLink.trim() || null,
-    })
+    const detail = await updateProjectLinks(parsedParams.data.projectNumber, parsedBody.data)
     return c.json(detail)
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update project link'
+    const message = error instanceof Error ? error.message : 'Failed to update project links'
     const status = message === 'Project not found' ? 404 : 400
 
     return c.json({ message }, status)
