@@ -1,11 +1,13 @@
 import { getStore, updateStore, type StoreData } from './file-store.js'
 import type {
+  CreateMemberInput,
   CreateProjectInput,
   Member,
   Phase,
   Project,
   ProjectStructureAssignmentInput,
   ProjectAssignment,
+  UpdateMemberInput,
   UpdatePhaseInput,
   UpdateProjectLinkInput,
   UpdateProjectPhasesInput,
@@ -241,6 +243,100 @@ function syncProjectStatus(projectId: string, store: StoreData) {
 export async function listMembers() {
   const store = await getStore()
   return store.members.map((member) => enrichMember(member, store.members))
+}
+
+export async function createMember(input: CreateMemberInput) {
+  return updateStore(['members'], (store) => {
+    const memberId = input.id.trim()
+    const name = input.name.trim()
+    const role = input.role.trim()
+
+    if (!memberId || !name || !role) {
+      throw new Error('Member fields are required')
+    }
+
+    if (store.members.some((member) => member.id === memberId)) {
+      throw new Error('Member id already exists')
+    }
+
+    if (input.managerId && !getMemberById(input.managerId, store.members)) {
+      throw new Error('Manager not found')
+    }
+
+    const member: Member = {
+      id: memberId,
+      name,
+      role,
+      managerId: input.managerId,
+    }
+
+    store.members.push(member)
+
+    return {
+      member: enrichMember(member, store.members),
+    }
+  })
+}
+
+export async function updateMember(memberId: string, input: UpdateMemberInput) {
+  return updateStore(['members'], (store) => {
+    const member = getMemberById(memberId, store.members)
+
+    if (!member) {
+      throw new Error('Member not found')
+    }
+
+    const name = input.name.trim()
+    const role = input.role.trim()
+
+    if (!name || !role) {
+      throw new Error('Member fields are required')
+    }
+
+    if (input.managerId === memberId) {
+      throw new Error('Member cannot manage itself')
+    }
+
+    if (input.managerId && !getMemberById(input.managerId, store.members)) {
+      throw new Error('Manager not found')
+    }
+
+    member.name = name
+    member.role = role
+    member.managerId = input.managerId
+
+    return {
+      member: enrichMember(member, store.members),
+    }
+  })
+}
+
+export async function deleteMember(memberId: string) {
+  return updateStore(['members'], (store) => {
+    const member = getMemberById(memberId, store.members)
+
+    if (!member) {
+      throw new Error('Member not found')
+    }
+
+    if (store.projects.some((project) => project.pmMemberId === memberId)) {
+      throw new Error('Member is assigned as PM')
+    }
+
+    if (store.assignments.some((assignment) => assignment.memberId === memberId)) {
+      throw new Error('Member is assigned to a project')
+    }
+
+    if (store.members.some((item) => item.managerId === memberId)) {
+      throw new Error('Member has subordinates')
+    }
+
+    store.members = store.members.filter((item) => item.id !== memberId)
+
+    return {
+      memberId,
+    }
+  })
 }
 
 export async function listProjects() {

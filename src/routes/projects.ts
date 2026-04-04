@@ -1,10 +1,13 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import {
+  createMember,
   createProject,
+  deleteMember,
   getProjectDetail,
   listMembers,
   listProjects,
+  updateMember,
   updatePhase,
   updateProjectCurrentPhase,
   updateProjectLink,
@@ -45,14 +48,19 @@ const createProjectSchema = z
     pmMemberId: z.string().min(1),
     projectLink: z.string().trim().max(500).optional().default(''),
   })
-  .refine((value) => value.startDate <= value.endDate, {
-    message: 'endDate must be greater than or equal to startDate',
-    path: ['endDate'],
-  })
-  .refine((value) => isValidOptionalUrl(value.projectLink), {
-    message: 'projectLink must be a valid URL',
-    path: ['projectLink'],
-  })
+
+const createMemberSchema = z.object({
+  id: z.string().trim().min(1).max(50),
+  name: z.string().trim().min(1).max(100),
+  role: z.string().trim().min(1).max(100),
+  managerId: z.string().min(1).nullable(),
+})
+
+const updateMemberSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  role: z.string().trim().min(1).max(100),
+  managerId: z.string().min(1).nullable(),
+})
 
 const updatePhaseSchema = z
   .object({
@@ -127,6 +135,86 @@ projectRoutes.get('/members', async (c) =>
     items: await listMembers(),
   }),
 )
+
+projectRoutes.post('/members', async (c) => {
+  const body = await c.req.json()
+  const parsed = createMemberSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsed.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await createMember(parsed.data)
+    return c.json(result, 201)
+  } catch (error) {
+    return c.json(
+      {
+        message: error instanceof Error ? error.message : 'Failed to create member',
+      },
+      400,
+    )
+  }
+})
+
+projectRoutes.patch('/members/:memberId', async (c) => {
+  const paramsSchema = z.object({
+    memberId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'memberId is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateMemberSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await updateMember(parsedParams.data.memberId, parsedBody.data)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update member'
+    const status = message === 'Member not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.delete('/members/:memberId', async (c) => {
+  const paramsSchema = z.object({
+    memberId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'memberId is invalid' }, 400)
+  }
+
+  try {
+    const result = await deleteMember(parsedParams.data.memberId)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete member'
+    const status = message === 'Member not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
 
 projectRoutes.get('/projects', async (c) =>
   c.json({

@@ -51,6 +51,19 @@ export interface CreateProjectInput {
   projectLink: string | null
 }
 
+export interface CreateMemberInput {
+  id: string
+  name: string
+  role: string
+  managerId: string | null
+}
+
+export interface UpdateMemberInput {
+  name: string
+  role: string
+  managerId: string | null
+}
+
 export interface UpdateProjectScheduleInput {
   startDate: string
   endDate: string
