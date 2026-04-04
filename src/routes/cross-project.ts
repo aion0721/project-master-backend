@@ -3,6 +3,6 @@ import { getCrossProjectWeeks } from '../lib/project-service.js'
 
 export const crossProjectRoutes = new Hono()
 
-crossProjectRoutes.get('/cross-project-weeks', (c) =>
-  c.json(getCrossProjectWeeks()),
+crossProjectRoutes.get('/cross-project-weeks', async (c) =>
+  c.json(await getCrossProjectWeeks()),
 )

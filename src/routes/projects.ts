@@ -42,15 +42,15 @@ const updatePhaseScheduleSchema = z
 
 export const projectRoutes = new Hono()
 
-projectRoutes.get('/members', (c) =>
+projectRoutes.get('/members', async (c) =>
   c.json({
-    items: listMembers(),
+    items: await listMembers(),
   }),
 )
 
-projectRoutes.get('/projects', (c) =>
+projectRoutes.get('/projects', async (c) =>
   c.json({
-    items: listProjects(),
+    items: await listProjects(),
   }),
 )
 
@@ -69,7 +69,7 @@ projectRoutes.post('/projects', async (c) => {
   }
 
   try {
-    const detail = createProject({
+    const detail = await createProject({
       ...parsed.data,
       status: workStatusLabelMap[parsed.data.status],
     })
@@ -85,7 +85,7 @@ projectRoutes.post('/projects', async (c) => {
   }
 })
 
-projectRoutes.get('/projects/:projectId', (c) => {
+projectRoutes.get('/projects/:projectId', async (c) => {
   const paramsSchema = z.object({
     projectId: z.string().min(1),
   })
@@ -100,7 +100,7 @@ projectRoutes.get('/projects/:projectId', (c) => {
     )
   }
 
-  const detail = getProjectDetail(parsed.data.projectId)
+  const detail = await getProjectDetail(parsed.data.projectId)
 
   if (!detail) {
     return c.json(
@@ -143,7 +143,7 @@ projectRoutes.patch('/phases/:phaseId', async (c) => {
   }
 
   try {
-    const phase = updatePhaseSchedule(parsedParams.data.phaseId, parsedBody.data)
+    const phase = await updatePhaseSchedule(parsedParams.data.phaseId, parsedBody.data)
     return c.json({ phase })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update phase schedule'

@@ -1,6 +1,6 @@
 import type { Member, Phase, Project, ProjectAssignment } from '../types/domain.js'
 
-export const members: Member[] = [
+export const seedMembers: Member[] = [
   { id: 'm1', name: '田中', role: 'PM', managerId: null },
   { id: 'm2', name: '佐藤', role: '基本設計リーダー', managerId: 'm1' },
   { id: 'm3', name: '山本', role: '詳細設計エンジニア', managerId: 'm2' },
@@ -13,7 +13,7 @@ export const members: Member[] = [
   { id: 'm10', name: '渡辺', role: 'テストリーダー', managerId: 'm4' },
 ]
 
-export const projects: Project[] = [
+export const seedProjects: Project[] = [
   { id: 'p1', name: '基幹会計刷新', startDate: '2026-04-06', endDate: '2026-06-26', status: '進行中', pmMemberId: 'm1' },
   { id: 'p2', name: '営業統合ダッシュボード', startDate: '2026-04-20', endDate: '2026-07-10', status: '遅延', pmMemberId: 'm6' },
   { id: 'p3', name: '購買管理API改修', startDate: '2026-03-30', endDate: '2026-05-29', status: '完了', pmMemberId: 'm1' },
@@ -21,7 +21,7 @@ export const projects: Project[] = [
   { id: 'p5', name: '経費精算モバイル連携', startDate: '2026-04-27', endDate: '2026-07-17', status: '進行中', pmMemberId: 'm1' },
 ]
 
-export const phases: Phase[] = [
+export const seedPhases: Phase[] = [
   { id: 'ph-p1-1', projectId: 'p1', name: '基礎検討', startWeek: 1, endWeek: 2, status: '完了', progress: 100, assigneeMemberId: 'm8' },
   { id: 'ph-p1-2', projectId: 'p1', name: '基本設計', startWeek: 3, endWeek: 5, status: '進行中', progress: 70, assigneeMemberId: 'm2' },
   { id: 'ph-p1-3', projectId: 'p1', name: '詳細設計', startWeek: 5, endWeek: 7, status: '未着手', progress: 10, assigneeMemberId: 'm3' },
@@ -49,7 +49,7 @@ export const phases: Phase[] = [
   { id: 'ph-p5-5', projectId: 'p5', name: '移行', startWeek: 11, endWeek: 12, status: '未着手', progress: 0, assigneeMemberId: 'm7' },
 ]
 
-export const assignments: ProjectAssignment[] = [
+export const seedAssignments: ProjectAssignment[] = [
   { id: 'as-p1-1', projectId: 'p1', memberId: 'm1', responsibility: 'PM' },
   { id: 'as-p1-2', projectId: 'p1', memberId: 'm8', responsibility: '基礎検討' },
   { id: 'as-p1-3', projectId: 'p1', memberId: 'm2', responsibility: '基本設計' },

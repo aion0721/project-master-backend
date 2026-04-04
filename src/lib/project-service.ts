@@ -1,4 +1,4 @@
-import { assignments, members, phases, projects } from '../data/mockData.js'
+import { getStore, updateStore, type StoreData } from './file-store.js'
 import type {
   CreateProjectInput,
   Member,
@@ -29,22 +29,14 @@ function addWeeks(value: string, weeks: number) {
   return addDays(value, weeks * 7)
 }
 
-function getMemberById(memberId: string) {
+function getMemberById(memberId: string, members: Member[]) {
   return members.find((member) => member.id === memberId)
 }
 
-function getPhaseById(phaseId: string) {
-  return phases.find((phase) => phase.id === phaseId)
-}
-
-function getProjectPhases(projectId: string) {
+function getProjectPhases(projectId: string, phases: Phase[]) {
   return phases
     .filter((phase) => phase.projectId === projectId)
     .sort((left, right) => left.startWeek - right.startWeek)
-}
-
-function getProjectAssignments(projectId: string) {
-  return assignments.filter((assignment) => assignment.projectId === projectId)
 }
 
 function getCurrentPhase(projectPhases: Phase[]) {
@@ -55,8 +47,8 @@ function getCurrentPhase(projectPhases: Phase[]) {
   )
 }
 
-function getProjectPm(project: Project) {
-  return getMemberById(project.pmMemberId)
+function getProjectPm(project: Project, members: Member[]) {
+  return getMemberById(project.pmMemberId, members)
 }
 
 function getPhaseRange(project: Project, phase: Phase) {
@@ -78,7 +70,7 @@ function getActivePhasesForDate(project: Project, projectPhases: Phase[], slotDa
   })
 }
 
-function getGlobalWeekSlots() {
+function getGlobalWeekSlots(projects: Project[]) {
   const orderedProjects = [...projects].sort(
     (left, right) => parseDate(left.startDate).getTime() - parseDate(right.startDate).getTime(),
   )
@@ -106,12 +98,12 @@ function getGlobalWeekSlots() {
   })
 }
 
-function enrichMember(member: Member | undefined) {
+function enrichMember(member: Member | undefined, members: Member[]) {
   if (!member) {
     return null
   }
 
-  const manager = member.managerId ? getMemberById(member.managerId) : undefined
+  const manager = member.managerId ? getMemberById(member.managerId, members) : undefined
 
   return {
     ...member,
@@ -119,37 +111,19 @@ function enrichMember(member: Member | undefined) {
   }
 }
 
-function getNextProjectId() {
+function getNextProjectId(projects: Project[]) {
   return `p${projects.length + 1}`
 }
 
-export function listMembers() {
-  return members.map((member) => enrichMember(member))
-}
-
-export function listProjects() {
-  return projects.map((project) => {
-    const projectPhases = getProjectPhases(project.id)
-    const currentPhase = getCurrentPhase(projectPhases)
-    const pm = getProjectPm(project)
-
-    return {
-      ...project,
-      currentPhase: currentPhase?.name ?? null,
-      pm: enrichMember(pm),
-    }
-  })
-}
-
-export function getProjectDetail(projectId: string) {
-  const project = projects.find((item) => item.id === projectId)
+function buildProjectDetailFromStore(projectId: string, store: StoreData) {
+  const project = store.projects.find((item) => item.id === projectId)
 
   if (!project) {
     return null
   }
 
-  const projectPhases = getProjectPhases(project.id)
-  const projectAssignments = getProjectAssignments(project.id)
+  const projectPhases = getProjectPhases(project.id, store.phases)
+  const projectAssignments = store.assignments.filter((assignment) => assignment.projectId === project.id)
   const relevantMemberIds = new Set([
     project.pmMemberId,
     ...projectPhases.map((phase) => phase.assigneeMemberId),
@@ -159,99 +133,130 @@ export function getProjectDetail(projectId: string) {
   return {
     project: {
       ...project,
-      pm: enrichMember(getProjectPm(project)),
+      pm: enrichMember(getProjectPm(project, store.members), store.members),
     },
     phases: projectPhases.map((phase) => ({
       ...phase,
-      assignee: enrichMember(getMemberById(phase.assigneeMemberId)),
+      assignee: enrichMember(getMemberById(phase.assigneeMemberId, store.members), store.members),
       range: getPhaseRange(project, phase),
     })),
     assignments: projectAssignments.map((assignment) => ({
       ...assignment,
-      member: enrichMember(getMemberById(assignment.memberId)),
+      member: enrichMember(getMemberById(assignment.memberId, store.members), store.members),
     })),
-    members: members
+    members: store.members
       .filter((member) => relevantMemberIds.has(member.id))
-      .map((member) => enrichMember(member)),
+      .map((member) => enrichMember(member, store.members)),
   }
 }
 
-export function createProject(input: CreateProjectInput) {
-  const pm = getMemberById(input.pmMemberId)
+export async function listMembers() {
+  const store = await getStore()
+  return store.members.map((member) => enrichMember(member, store.members))
+}
 
-  if (!pm) {
-    throw new Error('PM member does not exist')
-  }
+export async function listProjects() {
+  const store = await getStore()
 
-  const projectId = getNextProjectId()
-  const project: Project = {
-    id: projectId,
-    name: input.name,
-    startDate: input.startDate,
-    endDate: input.endDate,
-    status: input.status,
-    pmMemberId: input.pmMemberId,
-  }
+  return store.projects.map((project) => {
+    const projectPhases = getProjectPhases(project.id, store.phases)
+    const currentPhase = getCurrentPhase(projectPhases)
+    const pm = getProjectPm(project, store.members)
 
-  projects.push(project)
-  assignments.push({
-    id: `as-${projectId}-1`,
-    projectId,
-    memberId: input.pmMemberId,
-    responsibility: 'PM',
+    return {
+      ...project,
+      currentPhase: currentPhase?.name ?? null,
+      pm: enrichMember(pm, store.members),
+    }
   })
+}
 
-  phaseTemplates.forEach((template, index) => {
-    phases.push({
-      id: `ph-${projectId}-${index + 1}`,
+export async function getProjectDetail(projectId: string) {
+  const store = await getStore()
+  return buildProjectDetailFromStore(projectId, store)
+}
+
+export async function createProject(input: CreateProjectInput) {
+  return updateStore(['projects', 'phases', 'assignments'], (store) => {
+    const pm = getMemberById(input.pmMemberId, store.members)
+
+    if (!pm) {
+      throw new Error('PM member does not exist')
+    }
+
+    const projectId = getNextProjectId(store.projects)
+    const project: Project = {
+      id: projectId,
+      name: input.name,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      status: input.status,
+      pmMemberId: input.pmMemberId,
+    }
+
+    store.projects.push(project)
+    store.assignments.push({
+      id: `as-${projectId}-1`,
       projectId,
-      name: template.name,
-      startWeek: template.startWeek,
-      endWeek: template.endWeek,
-      status: '未着手',
-      progress: 0,
-      assigneeMemberId: input.pmMemberId,
+      memberId: input.pmMemberId,
+      responsibility: 'PM',
     })
+
+    phaseTemplates.forEach((template, index) => {
+      store.phases.push({
+        id: `ph-${projectId}-${index + 1}`,
+        projectId,
+        name: template.name,
+        startWeek: template.startWeek,
+        endWeek: template.endWeek,
+        status: '未着手',
+        progress: 0,
+        assigneeMemberId: input.pmMemberId,
+      })
+    })
+
+    return buildProjectDetailFromStore(projectId, store)
   })
-
-  return getProjectDetail(projectId)
 }
 
-export function updatePhaseSchedule(phaseId: string, input: UpdatePhaseScheduleInput) {
-  const phase = getPhaseById(phaseId)
+export async function updatePhaseSchedule(phaseId: string, input: UpdatePhaseScheduleInput) {
+  return updateStore(['phases'], (store) => {
+    const phase = store.phases.find((item) => item.id === phaseId)
 
-  if (!phase) {
-    throw new Error('Phase not found')
-  }
+    if (!phase) {
+      throw new Error('Phase not found')
+    }
 
-  if (input.startWeek < 1) {
-    throw new Error('startWeek must be greater than or equal to 1')
-  }
+    if (input.startWeek < 1) {
+      throw new Error('startWeek must be greater than or equal to 1')
+    }
 
-  if (input.endWeek < input.startWeek) {
-    throw new Error('endWeek must be greater than or equal to startWeek')
-  }
+    if (input.endWeek < input.startWeek) {
+      throw new Error('endWeek must be greater than or equal to startWeek')
+    }
 
-  phase.startWeek = input.startWeek
-  phase.endWeek = input.endWeek
+    phase.startWeek = input.startWeek
+    phase.endWeek = input.endWeek
 
-  return phase
+    return { ...phase }
+  })
 }
 
-export function getCrossProjectWeeks() {
-  const weekSlots = getGlobalWeekSlots()
+export async function getCrossProjectWeeks() {
+  const store = await getStore()
+  const weekSlots = getGlobalWeekSlots(store.projects)
 
   return {
     weeks: weekSlots,
-    projects: projects.map((project) => {
-      const projectPhases = getProjectPhases(project.id)
-      const pm = getProjectPm(project)
+    projects: store.projects.map((project) => {
+      const projectPhases = getProjectPhases(project.id, store.phases)
+      const pm = getProjectPm(project, store.members)
 
       return {
         id: project.id,
         name: project.name,
         status: project.status,
-        pm: enrichMember(pm),
+        pm: enrichMember(pm, store.members),
         weeklyPhases: weekSlots.map((slot) => ({
           weekIndex: slot.index,
           startDate: slot.startDate,
