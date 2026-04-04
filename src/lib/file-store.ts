@@ -3,12 +3,20 @@ import { dirname, resolve } from 'node:path'
 import { z } from 'zod'
 import {
   seedAssignments,
+  seedEvents,
   seedMembers,
   seedPhases,
   seedProjects,
   seedUsers,
 } from '../data/seedData.js'
-import type { Member, Phase, Project, ProjectAssignment, UserProfile } from '../types/domain.js'
+import type {
+  Member,
+  Phase,
+  Project,
+  ProjectAssignment,
+  ProjectEvent,
+  UserProfile,
+} from '../types/domain.js'
 
 const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
 const projectLinkSchema = z.object({
@@ -43,6 +51,16 @@ const phaseSchema = z.object({
   assigneeMemberId: z.string().min(1),
 })
 
+const eventSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  name: z.string().min(1),
+  week: z.number().int().min(1),
+  status: workStatusSchema,
+  ownerMemberId: z.string().min(1).nullable().optional(),
+  note: z.string().nullable().optional(),
+})
+
 const memberSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -67,6 +85,7 @@ const userSchema = z.object({
 const storeSchema = {
   projects: z.array(projectSchema),
   phases: z.array(phaseSchema),
+  events: z.array(eventSchema),
   members: z.array(memberSchema),
   assignments: z.array(assignmentSchema),
   users: z.array(userSchema),
@@ -77,6 +96,7 @@ type StoreKey = keyof typeof storeSchema
 export interface StoreData {
   projects: Project[]
   phases: Phase[]
+  events: ProjectEvent[]
   members: Member[]
   assignments: ProjectAssignment[]
   users: UserProfile[]
@@ -86,6 +106,7 @@ const dataDirectory = resolve(process.cwd(), 'data')
 const filePaths: Record<StoreKey, string> = {
   projects: resolve(dataDirectory, 'projects.json'),
   phases: resolve(dataDirectory, 'phases.json'),
+  events: resolve(dataDirectory, 'events.json'),
   members: resolve(dataDirectory, 'members.json'),
   assignments: resolve(dataDirectory, 'assignments.json'),
   users: resolve(dataDirectory, 'users.json'),
@@ -94,6 +115,7 @@ const filePaths: Record<StoreKey, string> = {
 const defaultData: StoreData = {
   projects: seedProjects,
   phases: seedPhases,
+  events: seedEvents,
   members: seedMembers,
   assignments: seedAssignments,
   users: seedUsers,
@@ -114,6 +136,7 @@ function cloneStore(store: StoreData): StoreData {
       projectLinks: project.projectLinks.map((link) => ({ ...link })),
     })),
     phases: cloneEntries(store.phases),
+    events: cloneEntries(store.events),
     members: cloneEntries(store.members),
     assignments: cloneEntries(store.assignments),
     users: cloneEntries(store.users).map((user) => ({
@@ -157,9 +180,10 @@ async function loadFromDisk(): Promise<StoreData> {
   await mkdir(dataDirectory, { recursive: true })
   await Promise.all((Object.keys(filePaths) as StoreKey[]).map((key) => ensureFileExists(key)))
 
-  const [projects, phases, members, assignments, users] = await Promise.all([
+  const [projects, phases, events, members, assignments, users] = await Promise.all([
     readAndValidateFile('projects'),
     readAndValidateFile('phases'),
+    readAndValidateFile('events'),
     readAndValidateFile('members'),
     readAndValidateFile('assignments'),
     readAndValidateFile('users'),
@@ -168,6 +192,7 @@ async function loadFromDisk(): Promise<StoreData> {
   return {
     projects,
     phases,
+    events,
     members,
     assignments,
     users,

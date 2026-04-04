@@ -8,7 +8,9 @@ import type {
   ProjectLink,
   ProjectStructureAssignmentInput,
   ProjectAssignment,
+  ProjectEvent,
   UpdateMemberInput,
+  UpdateProjectEventsInput,
   UpdatePhaseInput,
   UpdateProjectLinksInput,
   UpdateProjectPhasesInput,
@@ -54,6 +56,10 @@ function getMemberById(memberId: string, members: Member[]) {
 
 function getProjectPhases(projectId: string, phases: Phase[]) {
   return phases.filter((phase) => phase.projectId === projectId)
+}
+
+function getProjectEvents(projectId: string, events: ProjectEvent[]) {
+  return events.filter((event) => event.projectId === projectId)
 }
 
 function getCurrentPhase(projectPhases: Phase[]) {
@@ -155,11 +161,15 @@ function buildProjectDetailFromStore(projectId: string, store: StoreData) {
   const projectAssignments = store.assignments.filter(
     (assignment) => assignment.projectId === project.projectNumber,
   )
+  const projectEvents = getProjectEvents(project.projectNumber, store.events)
   const relevantMemberIds = new Set([
     project.pmMemberId,
     ...projectAssignments.map((item) => item.memberId),
     ...projectAssignments
       .map((item) => item.reportsToMemberId)
+      .filter((memberId): memberId is string => Boolean(memberId)),
+    ...projectEvents
+      .map((event) => event.ownerMemberId)
       .filter((memberId): memberId is string => Boolean(memberId)),
   ])
 
@@ -172,6 +182,7 @@ function buildProjectDetailFromStore(projectId: string, store: StoreData) {
       ...phase,
       range: getPhaseRange(project, phase),
     })),
+    events: projectEvents.map((event) => ({ ...event })),
     assignments: projectAssignments.map((assignment) => ({
       ...assignment,
       member: enrichMember(getMemberById(assignment.memberId, store.members), store.members),
@@ -207,6 +218,21 @@ function createPhaseIdGenerator(projectId: string, phases: Phase[]) {
 
   return () => {
     const nextId = `ph-${projectId}-${nextSuffix}`
+    nextSuffix += 1
+    return nextId
+  }
+}
+
+function createEventIdGenerator(projectId: string, events: ProjectEvent[]) {
+  let nextSuffix =
+    events
+      .filter((event) => event.projectId === projectId)
+      .map((event) => Number(event.id.split('-').at(-1)))
+      .filter((value) => Number.isFinite(value))
+      .reduce((max, value) => Math.max(max, value), 0) + 1
+
+  return () => {
+    const nextId = `ev-${projectId}-${nextSuffix}`
     nextSuffix += 1
     return nextId
   }
@@ -567,6 +593,45 @@ export async function updateProjectPhases(projectId: string, input: UpdateProjec
 
     store.phases = store.phases.filter((phase) => phase.projectId !== projectId).concat(nextPhases)
     syncProjectStatus(projectId, store)
+
+    return buildProjectDetailFromStore(projectId, store)
+  })
+}
+
+export async function updateProjectEvents(projectId: string, input: UpdateProjectEventsInput) {
+  return updateStore(['events'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    for (const event of input.events) {
+      if (!event.name.trim()) {
+        throw new Error('event name is required')
+      }
+
+      if (event.week < 1) {
+        throw new Error('event week is invalid')
+      }
+
+      if (event.ownerMemberId && !getMemberById(event.ownerMemberId, store.members)) {
+        throw new Error('event owner does not exist')
+      }
+    }
+
+    const nextEventId = createEventIdGenerator(projectId, store.events)
+    const nextEvents = input.events.map((event) => ({
+      id: event.id ?? nextEventId(),
+      projectId,
+      name: event.name.trim(),
+      week: event.week,
+      status: event.status,
+      ownerMemberId: event.ownerMemberId ?? null,
+      note: event.note?.trim() || null,
+    }))
+
+    store.events = store.events.filter((event) => event.projectId !== projectId).concat(nextEvents)
 
     return buildProjectDetailFromStore(projectId, store)
   })

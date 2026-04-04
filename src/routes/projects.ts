@@ -10,6 +10,7 @@ import {
   updateMember,
   updatePhase,
   updateProjectCurrentPhase,
+  updateProjectEvents,
   updateProjectLinks,
   updateProjectPhases,
   updateProjectSchedule,
@@ -103,6 +104,19 @@ const updateProjectPhasesSchema = z.object({
         }),
     )
     .min(1),
+})
+
+const updateProjectEventsSchema = z.object({
+  events: z.array(
+    z.object({
+      id: z.string().min(1).optional(),
+      name: z.string().trim().min(1).max(100),
+      week: z.number().int().min(1),
+      status: workStatusSchema,
+      ownerMemberId: z.string().min(1).nullable().optional(),
+      note: z.string().trim().max(500).nullable().optional(),
+    }),
+  ),
 })
 
 const updateProjectStructureSchema = z.object({
@@ -392,6 +406,40 @@ projectRoutes.patch('/projects/:projectNumber/phases', async (c) => {
     return c.json(detail)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update project phases'
+    const status = message === 'Project not found' ? 404 : 400
+
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.patch('/projects/:projectNumber/events', async (c) => {
+  const paramsSchema = z.object({
+    projectNumber: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'projectNumber is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateProjectEventsSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const detail = await updateProjectEvents(parsedParams.data.projectNumber, parsedBody.data)
+    return c.json(detail)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update project events'
     const status = message === 'Project not found' ? 404 : 400
 
     return c.json({ message }, status)

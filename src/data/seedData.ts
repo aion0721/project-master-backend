@@ -1,4 +1,11 @@
-import type { Member, Phase, Project, ProjectAssignment, UserProfile } from '../types/domain.js'
+import type {
+  Member,
+  Phase,
+  Project,
+  ProjectAssignment,
+  ProjectEvent,
+  UserProfile,
+} from '../types/domain.js'
 
 export const seedMembers: Member[] = [
   { id: 'm1', name: '田中', role: 'PM', managerId: null },
@@ -123,6 +130,45 @@ export const seedAssignments: ProjectAssignment[] = [
   { id: 'as-p5-4', projectId: 'PRJ-005', memberId: 'm10', responsibility: 'テスト', reportsToMemberId: 'm4' },
   { id: 'as-p5-5', projectId: 'PRJ-005', memberId: 'm7', responsibility: 'OS', reportsToMemberId: 'm4' },
   { id: 'as-p5-6', projectId: 'PRJ-005', memberId: 'm4', responsibility: 'インフラ統括', reportsToMemberId: 'm1' },
+]
+
+export const seedEvents: ProjectEvent[] = [
+  {
+    id: 'ev-p1-1',
+    projectId: 'PRJ-001',
+    name: '環境提供',
+    week: 4,
+    status: '完了',
+    ownerMemberId: 'm7',
+    note: '検証環境を利用開始',
+  },
+  {
+    id: 'ev-p1-2',
+    projectId: 'PRJ-001',
+    name: 'レビュー会',
+    week: 6,
+    status: '進行中',
+    ownerMemberId: 'm2',
+    note: '基本設計レビュー',
+  },
+  {
+    id: 'ev-p2-1',
+    projectId: 'PRJ-002',
+    name: '本番申請',
+    week: 8,
+    status: '未着手',
+    ownerMemberId: 'm6',
+    note: null,
+  },
+  {
+    id: 'ev-p5-1',
+    projectId: 'PRJ-005',
+    name: '顧客デモ',
+    week: 7,
+    status: '進行中',
+    ownerMemberId: 'm1',
+    note: '月例定例向け',
+  },
 ]
 
 export const seedUsers: UserProfile[] = [

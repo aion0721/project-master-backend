@@ -26,6 +26,16 @@ export interface Phase {
   assigneeMemberId: string
 }
 
+export interface ProjectEvent {
+  id: string
+  projectId: string
+  name: string
+  week: number
+  status: WorkStatus
+  ownerMemberId?: string | null
+  note?: string | null
+}
+
 export interface Member {
   id: string
   name: string
@@ -87,6 +97,17 @@ export interface UpdateProjectPhasesInput {
     endWeek: number
     status: WorkStatus
     progress: number
+  }>
+}
+
+export interface UpdateProjectEventsInput {
+  events: Array<{
+    id?: string
+    name: string
+    week: number
+    status: WorkStatus
+    ownerMemberId?: string | null
+    note?: string | null
   }>
 }
 
