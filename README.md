@@ -14,7 +14,9 @@ yarn dev
 ## 利用可能なAPI
 
 - `GET /health`
+- `GET /api/members`
 - `GET /api/projects`
+- `POST /api/projects`
 - `GET /api/projects/:projectId`
 - `GET /api/cross-project-weeks`
 

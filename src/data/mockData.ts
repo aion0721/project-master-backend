@@ -1,24 +1,24 @@
 import type { Member, Phase, Project, ProjectAssignment } from '../types/domain.js'
 
 export const members: Member[] = [
-  { id: 'm1', name: '田中', role: 'プロジェクトマネージャー', managerId: null },
-  { id: 'm2', name: '佐藤', role: '設計リード', managerId: 'm1' },
-  { id: 'm3', name: '山本', role: 'アプリケーションエンジニア', managerId: 'm2' },
-  { id: 'm4', name: '高橋', role: 'インフラリード', managerId: 'm1' },
+  { id: 'm1', name: '田中', role: 'PM', managerId: null },
+  { id: 'm2', name: '佐藤', role: '基本設計リーダー', managerId: 'm1' },
+  { id: 'm3', name: '山本', role: '詳細設計エンジニア', managerId: 'm2' },
+  { id: 'm4', name: '高橋', role: 'インフラリーダー', managerId: 'm1' },
   { id: 'm5', name: '伊藤', role: 'QAエンジニア', managerId: 'm4' },
-  { id: 'm6', name: '鈴木', role: 'PMO', managerId: 'm1' },
-  { id: 'm7', name: '中村', role: 'OSスペシャリスト', managerId: 'm4' },
+  { id: 'm6', name: '中村', role: 'PMO', managerId: 'm1' },
+  { id: 'm7', name: '鈴木', role: 'OSスペシャリスト', managerId: 'm4' },
   { id: 'm8', name: '小林', role: 'アーキテクト', managerId: 'm2' },
   { id: 'm9', name: '加藤', role: 'バックエンドエンジニア', managerId: 'm2' },
-  { id: 'm10', name: '吉田', role: 'テストリード', managerId: 'm4' },
+  { id: 'm10', name: '渡辺', role: 'テストリーダー', managerId: 'm4' },
 ]
 
 export const projects: Project[] = [
-  { id: 'p1', name: '顧客管理基盤刷新', startDate: '2026-04-06', endDate: '2026-06-26', status: '進行中', pmMemberId: 'm1' },
-  { id: 'p2', name: '物流統合ダッシュボード', startDate: '2026-04-20', endDate: '2026-07-10', status: '遅延', pmMemberId: 'm6' },
-  { id: 'p3', name: '会計連携API改修', startDate: '2026-03-30', endDate: '2026-05-29', status: '完了', pmMemberId: 'm1' },
-  { id: 'p4', name: '社内ポータル更改', startDate: '2026-05-11', endDate: '2026-08-07', status: '未着手', pmMemberId: 'm6' },
-  { id: 'p5', name: '営業支援モバイル連携', startDate: '2026-04-27', endDate: '2026-07-17', status: '進行中', pmMemberId: 'm1' },
+  { id: 'p1', name: '基幹会計刷新', startDate: '2026-04-06', endDate: '2026-06-26', status: '進行中', pmMemberId: 'm1' },
+  { id: 'p2', name: '営業統合ダッシュボード', startDate: '2026-04-20', endDate: '2026-07-10', status: '遅延', pmMemberId: 'm6' },
+  { id: 'p3', name: '購買管理API改修', startDate: '2026-03-30', endDate: '2026-05-29', status: '完了', pmMemberId: 'm1' },
+  { id: 'p4', name: '社内ポータル刷新', startDate: '2026-05-11', endDate: '2026-08-07', status: '未着手', pmMemberId: 'm6' },
+  { id: 'p5', name: '経費精算モバイル連携', startDate: '2026-04-27', endDate: '2026-07-17', status: '進行中', pmMemberId: 'm1' },
 ]
 
 export const phases: Phase[] = [
