@@ -46,9 +46,7 @@ function getMemberById(memberId: string, members: Member[]) {
 }
 
 function getProjectPhases(projectId: string, phases: Phase[]) {
-  return phases
-    .filter((phase) => phase.projectId === projectId)
-    .sort((left, right) => left.startWeek - right.startWeek)
+  return phases.filter((phase) => phase.projectId === projectId)
 }
 
 function getCurrentPhase(projectPhases: Phase[]) {
