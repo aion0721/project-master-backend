@@ -6,6 +6,7 @@ import {
   listMembers,
   listProjects,
   updatePhase,
+  updateProjectCurrentPhase,
   updateProjectStructure,
 } from '../lib/project-service.js'
 
@@ -42,6 +43,10 @@ const updatePhaseSchema = z
     message: 'endWeek must be greater than or equal to startWeek',
     path: ['endWeek'],
   })
+
+const updateCurrentPhaseSchema = z.object({
+  phaseId: z.string().min(1),
+})
 
 const updateProjectStructureSchema = z.object({
   pmMemberId: z.string().min(1),
@@ -106,26 +111,51 @@ projectRoutes.get('/projects/:projectId', async (c) => {
   const parsed = paramsSchema.safeParse(c.req.param())
 
   if (!parsed.success) {
-    return c.json(
-      {
-        message: 'projectId is invalid',
-      },
-      400,
-    )
+    return c.json({ message: 'projectId is invalid' }, 400)
   }
 
   const detail = await getProjectDetail(parsed.data.projectId)
 
   if (!detail) {
-    return c.json(
-      {
-        message: 'Project not found',
-      },
-      404,
-    )
+    return c.json({ message: 'Project not found' }, 404)
   }
 
   return c.json(detail)
+})
+
+projectRoutes.patch('/projects/:projectId/current-phase', async (c) => {
+  const paramsSchema = z.object({
+    projectId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'projectId is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateCurrentPhaseSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const detail = await updateProjectCurrentPhase(parsedParams.data.projectId, parsedBody.data.phaseId)
+    return c.json(detail)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update current phase'
+    const status =
+      message === 'Project not found' || message === 'Phase not found in project' ? 404 : 400
+
+    return c.json({ message }, status)
+  }
 })
 
 projectRoutes.patch('/projects/:projectId/structure', async (c) => {
@@ -135,12 +165,7 @@ projectRoutes.patch('/projects/:projectId/structure', async (c) => {
   const parsedParams = paramsSchema.safeParse(c.req.param())
 
   if (!parsedParams.success) {
-    return c.json(
-      {
-        message: 'projectId is invalid',
-      },
-      400,
-    )
+    return c.json({ message: 'projectId is invalid' }, 400)
   }
 
   const body = await c.req.json()
@@ -174,12 +199,7 @@ projectRoutes.patch('/phases/:phaseId', async (c) => {
   const parsedParams = paramsSchema.safeParse(c.req.param())
 
   if (!parsedParams.success) {
-    return c.json(
-      {
-        message: 'phaseId is invalid',
-      },
-      400,
-    )
+    return c.json({ message: 'phaseId is invalid' }, 400)
   }
 
   const body = await c.req.json()

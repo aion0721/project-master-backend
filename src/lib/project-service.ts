@@ -210,6 +210,17 @@ function normalizeStructureAssignments(
   ]
 }
 
+function syncProjectStatus(projectId: string, store: StoreData) {
+  const project = store.projects.find((item) => item.id === projectId)
+
+  if (!project) {
+    throw new Error('Project not found')
+  }
+
+  project.status = deriveProjectStatus(getProjectPhases(project.id, store.phases))
+  return project
+}
+
 export async function listMembers() {
   const store = await getStore()
   return store.members.map((member) => enrichMember(member, store.members))
@@ -304,19 +315,49 @@ export async function updatePhase(phaseId: string, input: UpdatePhaseInput) {
     phase.status = input.status
     phase.progress = input.progress
 
-    const project = store.projects.find((item) => item.id === phase.projectId)
-
-    if (!project) {
-      throw new Error('Project not found')
-    }
-
-    const projectPhases = getProjectPhases(project.id, store.phases)
-    project.status = deriveProjectStatus(projectPhases)
+    const project = syncProjectStatus(phase.projectId, store)
 
     return {
       phase: { ...phase },
       project: { ...project },
     }
+  })
+}
+
+export async function updateProjectCurrentPhase(projectId: string, phaseId: string) {
+  return updateStore(['phases', 'projects'], (store) => {
+    const project = store.projects.find((item) => item.id === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    const projectPhases = getProjectPhases(projectId, store.phases)
+    const targetIndex = projectPhases.findIndex((phase) => phase.id === phaseId)
+
+    if (targetIndex < 0) {
+      throw new Error('Phase not found in project')
+    }
+
+    projectPhases.forEach((phase, index) => {
+      if (index < targetIndex) {
+        phase.status = '完了'
+        phase.progress = 100
+        return
+      }
+
+      if (index === targetIndex) {
+        phase.status = '進行中'
+        phase.progress = phase.progress >= 100 ? 80 : phase.progress
+        return
+      }
+
+      phase.status = '未着手'
+      phase.progress = 0
+    })
+
+    syncProjectStatus(projectId, store)
+    return buildProjectDetailFromStore(projectId, store)
   })
 }
 

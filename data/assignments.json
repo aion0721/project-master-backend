@@ -184,5 +184,11 @@
     "projectId": "p6",
     "memberId": "m6",
     "responsibility": "PM"
+  },
+  {
+    "id": "as-p6-2",
+    "projectId": "p6",
+    "memberId": "m2",
+    "responsibility": "テスト"
   }
 ]

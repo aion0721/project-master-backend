@@ -6,7 +6,7 @@
     "startWeek": 1,
     "endWeek": 2,
     "status": "完了",
-    "progress": 90,
+    "progress": 100,
     "assigneeMemberId": "m8"
   },
   {
@@ -15,8 +15,8 @@
     "name": "基本設計",
     "startWeek": 2,
     "endWeek": 5,
-    "status": "進行中",
-    "progress": 70,
+    "status": "完了",
+    "progress": 100,
     "assigneeMemberId": "m2"
   },
   {
@@ -25,7 +25,7 @@
     "name": "詳細設計",
     "startWeek": 5,
     "endWeek": 7,
-    "status": "未着手",
+    "status": "進行中",
     "progress": 10,
     "assigneeMemberId": "m3"
   },
@@ -255,8 +255,8 @@
     "name": "基礎検討",
     "startWeek": 1,
     "endWeek": 2,
-    "status": "未着手",
-    "progress": 0,
+    "status": "進行中",
+    "progress": 10,
     "assigneeMemberId": "m6"
   },
   {
