@@ -44,6 +44,7 @@ const assignmentSchema = z.object({
   projectId: z.string().min(1),
   memberId: z.string().min(1),
   responsibility: z.string().min(1),
+  reportsToMemberId: z.string().min(1).nullable().optional(),
 })
 
 const userSchema = z.object({

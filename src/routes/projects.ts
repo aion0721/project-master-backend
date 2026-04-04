@@ -124,6 +124,7 @@ const updateProjectStructureSchema = z.object({
       id: z.string().min(1).optional(),
       memberId: z.string().min(1),
       responsibility: z.string().trim().min(1).max(100),
+      reportsToMemberId: z.string().min(1).nullable().optional(),
     }),
   ),
 })

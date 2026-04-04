@@ -153,6 +153,9 @@ function buildProjectDetailFromStore(projectId: string, store: StoreData) {
   const relevantMemberIds = new Set([
     project.pmMemberId,
     ...projectAssignments.map((item) => item.memberId),
+    ...projectAssignments
+      .map((item) => item.reportsToMemberId)
+      .filter((memberId): memberId is string => Boolean(memberId)),
   ])
 
   return {
@@ -219,12 +222,14 @@ function normalizeStructureAssignments(
       projectId,
       memberId: pmMemberId,
       responsibility: 'PM',
+      reportsToMemberId: null,
     },
     ...inputAssignments.map((assignment) => ({
       id: assignment.id ?? nextAssignmentId(),
       projectId,
       memberId: assignment.memberId,
       responsibility: assignment.responsibility,
+      reportsToMemberId: assignment.reportsToMemberId ?? null,
     })),
   ]
 }
@@ -327,6 +332,10 @@ export async function deleteMember(memberId: string) {
       throw new Error('Member is assigned to a project')
     }
 
+    if (store.assignments.some((assignment) => assignment.reportsToMemberId === memberId)) {
+      throw new Error('Member is used in a project hierarchy')
+    }
+
     if (store.members.some((item) => item.managerId === memberId)) {
       throw new Error('Member has subordinates')
     }
@@ -389,6 +398,7 @@ export async function createProject(input: CreateProjectInput) {
       projectId,
       memberId: input.pmMemberId,
       responsibility: 'PM',
+      reportsToMemberId: null,
     })
 
     phaseTemplates.forEach((template, index) => {
@@ -569,6 +579,8 @@ export async function updateProjectStructure(projectId: string, input: UpdatePro
       throw new Error('PM member does not exist')
     }
 
+    const participatingMemberIds = new Set<string>([input.pmMemberId])
+
     for (const assignment of input.assignments) {
       if (!assignment.responsibility.trim()) {
         throw new Error('responsibility is required')
@@ -576,6 +588,46 @@ export async function updateProjectStructure(projectId: string, input: UpdatePro
 
       if (!getMemberById(assignment.memberId, store.members)) {
         throw new Error('Assigned member does not exist')
+      }
+
+       participatingMemberIds.add(assignment.memberId)
+    }
+
+    const memberParentMap = new Map<string, string | null>()
+
+    for (const assignment of input.assignments) {
+      if (assignment.reportsToMemberId && !participatingMemberIds.has(assignment.reportsToMemberId)) {
+        throw new Error('Hierarchy parent must be a project member')
+      }
+
+      if (assignment.reportsToMemberId === assignment.memberId) {
+        throw new Error('Member cannot report to themselves')
+      }
+
+      const nextParentId = assignment.reportsToMemberId ?? null
+      const currentParentId = memberParentMap.get(assignment.memberId)
+
+      if (
+        currentParentId !== undefined &&
+        currentParentId !== nextParentId
+      ) {
+        throw new Error('A member must have a single hierarchy parent in the project')
+      }
+
+      memberParentMap.set(assignment.memberId, nextParentId)
+    }
+
+    for (const [memberId] of memberParentMap) {
+      const visited = new Set<string>([memberId])
+      let cursor = memberParentMap.get(memberId) ?? null
+
+      while (cursor) {
+        if (visited.has(cursor)) {
+          throw new Error('Project hierarchy cannot contain cycles')
+        }
+
+        visited.add(cursor)
+        cursor = cursor === input.pmMemberId ? null : (memberParentMap.get(cursor) ?? null)
       }
     }
 
