@@ -1,4 +1,4 @@
-import type { Member, Phase, Project, ProjectAssignment } from '../types/domain.js'
+import type { Member, Phase, Project, ProjectAssignment, UserProfile } from '../types/domain.js'
 
 export const seedMembers: Member[] = [
   { id: 'm1', name: '田中', role: 'PM', managerId: null },
@@ -80,4 +80,12 @@ export const seedAssignments: ProjectAssignment[] = [
   { id: 'as-p5-4', projectId: 'p5', memberId: 'm10', responsibility: 'テスト' },
   { id: 'as-p5-5', projectId: 'p5', memberId: 'm7', responsibility: 'OS' },
   { id: 'as-p5-6', projectId: 'p5', memberId: 'm4', responsibility: 'インフラ統括' },
+]
+
+export const seedUsers: UserProfile[] = [
+  {
+    id: 'u1',
+    username: 'demo',
+    bookmarkedProjectIds: ['p1', 'p5'],
+  },
 ]

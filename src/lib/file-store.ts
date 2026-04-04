@@ -6,8 +6,9 @@ import {
   seedMembers,
   seedPhases,
   seedProjects,
+  seedUsers,
 } from '../data/seedData.js'
-import type { Member, Phase, Project, ProjectAssignment } from '../types/domain.js'
+import type { Member, Phase, Project, ProjectAssignment, UserProfile } from '../types/domain.js'
 
 const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
 const phaseNameSchema = z.enum(['基礎検討', '基本設計', '詳細設計', 'テスト', '移行'])
@@ -46,11 +47,18 @@ const assignmentSchema = z.object({
   responsibility: z.string().min(1),
 })
 
+const userSchema = z.object({
+  id: z.string().min(1),
+  username: z.string().min(1),
+  bookmarkedProjectIds: z.array(z.string().min(1)),
+})
+
 const storeSchema = {
   projects: z.array(projectSchema),
   phases: z.array(phaseSchema),
   members: z.array(memberSchema),
   assignments: z.array(assignmentSchema),
+  users: z.array(userSchema),
 } as const
 
 type StoreKey = keyof typeof storeSchema
@@ -60,6 +68,7 @@ export interface StoreData {
   phases: Phase[]
   members: Member[]
   assignments: ProjectAssignment[]
+  users: UserProfile[]
 }
 
 const dataDirectory = resolve(process.cwd(), 'data')
@@ -68,6 +77,7 @@ const filePaths: Record<StoreKey, string> = {
   phases: resolve(dataDirectory, 'phases.json'),
   members: resolve(dataDirectory, 'members.json'),
   assignments: resolve(dataDirectory, 'assignments.json'),
+  users: resolve(dataDirectory, 'users.json'),
 }
 
 const defaultData: StoreData = {
@@ -75,13 +85,14 @@ const defaultData: StoreData = {
   phases: seedPhases,
   members: seedMembers,
   assignments: seedAssignments,
+  users: seedUsers,
 }
 
 let cache: StoreData | null = null
 let initPromise: Promise<StoreData> | null = null
 let writeQueue = Promise.resolve()
 
-function cloneEntries<T extends { id: string }>(items: T[]) {
+function cloneEntries<T>(items: T[]) {
   return items.map((item) => ({ ...item }))
 }
 
@@ -91,6 +102,10 @@ function cloneStore(store: StoreData): StoreData {
     phases: cloneEntries(store.phases),
     members: cloneEntries(store.members),
     assignments: cloneEntries(store.assignments),
+    users: cloneEntries(store.users).map((user) => ({
+      ...user,
+      bookmarkedProjectIds: [...user.bookmarkedProjectIds],
+    })),
   }
 }
 
@@ -126,15 +141,14 @@ async function readAndValidateFile<Key extends StoreKey>(key: Key): Promise<Stor
 
 async function loadFromDisk(): Promise<StoreData> {
   await mkdir(dataDirectory, { recursive: true })
-  await Promise.all(
-    (Object.keys(filePaths) as StoreKey[]).map((key) => ensureFileExists(key)),
-  )
+  await Promise.all((Object.keys(filePaths) as StoreKey[]).map((key) => ensureFileExists(key)))
 
-  const [projects, phases, members, assignments] = await Promise.all([
+  const [projects, phases, members, assignments, users] = await Promise.all([
     readAndValidateFile('projects'),
     readAndValidateFile('phases'),
     readAndValidateFile('members'),
     readAndValidateFile('assignments'),
+    readAndValidateFile('users'),
   ])
 
   return {
@@ -142,6 +156,7 @@ async function loadFromDisk(): Promise<StoreData> {
     phases,
     members,
     assignments,
+    users,
   }
 }
 

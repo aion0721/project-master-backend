@@ -1,0 +1,10 @@
+[
+  {
+    "id": "u1",
+    "username": "demo",
+    "bookmarkedProjectIds": [
+      "p1",
+      "p5"
+    ]
+  }
+]

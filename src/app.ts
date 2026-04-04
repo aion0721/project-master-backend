@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { crossProjectRoutes } from './routes/cross-project.js'
 import { healthRoutes } from './routes/health.js'
 import { projectRoutes } from './routes/projects.js'
+import { userRoutes } from './routes/users.js'
 
 export const app = new Hono()
 
@@ -18,3 +19,4 @@ app.get('/', (c) =>
 app.route('/', healthRoutes)
 app.route('/api', projectRoutes)
 app.route('/api', crossProjectRoutes)
+app.route('/api', userRoutes)

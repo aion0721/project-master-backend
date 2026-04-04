@@ -36,6 +36,12 @@ export interface ProjectAssignment {
   responsibility: string
 }
 
+export interface UserProfile {
+  id: string
+  username: string
+  bookmarkedProjectIds: string[]
+}
+
 export interface CreateProjectInput {
   name: string
   startDate: string
