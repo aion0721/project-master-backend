@@ -11,8 +11,6 @@ import {
 import type { Member, Phase, Project, ProjectAssignment, UserProfile } from '../types/domain.js'
 
 const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
-const phaseNameSchema = z.enum(['基礎検討', '基本設計', '詳細設計', 'テスト', '移行'])
-
 const projectSchema = z.object({
   projectNumber: z.string().min(1),
   name: z.string().min(1),
@@ -20,12 +18,13 @@ const projectSchema = z.object({
   endDate: z.string().date(),
   status: workStatusSchema,
   pmMemberId: z.string().min(1),
+  projectLink: z.string().url().nullable().optional(),
 })
 
 const phaseSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
-  name: phaseNameSchema,
+  name: z.string().min(1),
   startWeek: z.number().int().min(1),
   endWeek: z.number().int().min(1),
   status: workStatusSchema,

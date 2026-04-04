@@ -9,16 +9,16 @@ export const seedMembers: Member[] = [
   { id: 'm6', name: '中村', role: 'PMO', managerId: 'm1' },
   { id: 'm7', name: '鈴木', role: 'OSスペシャリスト', managerId: 'm4' },
   { id: 'm8', name: '木村', role: 'アーキテクト', managerId: 'm2' },
-  { id: 'm9', name: '小林', role: 'バックエンドエンジニア', managerId: 'm2' },
-  { id: 'm10', name: '加藤', role: 'テストリーダー', managerId: 'm4' },
+  { id: 'm9', name: '松本', role: 'バックエンドエンジニア', managerId: 'm2' },
+  { id: 'm10', name: '小林', role: 'テストリーダー', managerId: 'm4' },
 ]
 
 export const seedProjects: Project[] = [
-  { projectNumber: 'PRJ-001', name: '基幹会計刷新', startDate: '2026-04-06', endDate: '2026-06-26', status: '進行中', pmMemberId: 'm1' },
-  { projectNumber: 'PRJ-002', name: '営業統合ダッシュボード', startDate: '2026-04-20', endDate: '2026-07-10', status: '遅延', pmMemberId: 'm6' },
-  { projectNumber: 'PRJ-003', name: '購買管理API改修', startDate: '2026-03-30', endDate: '2026-05-29', status: '完了', pmMemberId: 'm1' },
-  { projectNumber: 'PRJ-004', name: '社内ポータル刷新', startDate: '2026-05-11', endDate: '2026-08-07', status: '未着手', pmMemberId: 'm6' },
-  { projectNumber: 'PRJ-005', name: '経費精算モバイル連携', startDate: '2026-04-27', endDate: '2026-07-17', status: '進行中', pmMemberId: 'm1' },
+  { projectNumber: 'PRJ-001', name: '基幹会計刷新', startDate: '2026-04-06', endDate: '2026-06-26', status: '進行中', pmMemberId: 'm1', projectLink: 'https://example.com/projects/PRJ-001' },
+  { projectNumber: 'PRJ-002', name: '営業統合ダッシュボード', startDate: '2026-04-20', endDate: '2026-07-10', status: '遅延', pmMemberId: 'm6', projectLink: 'https://example.com/projects/PRJ-002' },
+  { projectNumber: 'PRJ-003', name: '購買管理API改修', startDate: '2026-03-30', endDate: '2026-05-29', status: '完了', pmMemberId: 'm1', projectLink: null },
+  { projectNumber: 'PRJ-004', name: '社内ポータル刷新', startDate: '2026-05-11', endDate: '2026-08-07', status: '未着手', pmMemberId: 'm6', projectLink: null },
+  { projectNumber: 'PRJ-005', name: '経費精算モバイル連携', startDate: '2026-04-27', endDate: '2026-07-17', status: '進行中', pmMemberId: 'm1', projectLink: 'https://example.com/projects/PRJ-005' },
 ]
 
 export const seedPhases: Phase[] = [

@@ -7,9 +7,24 @@ import {
   listProjects,
   updatePhase,
   updateProjectCurrentPhase,
+  updateProjectLink,
+  updateProjectPhases,
   updateProjectSchedule,
   updateProjectStructure,
 } from '../lib/project-service.js'
+
+function isValidOptionalUrl(value: string) {
+  if (!value.trim()) {
+    return true
+  }
+
+  try {
+    new URL(value)
+    return true
+  } catch {
+    return false
+  }
+}
 
 const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
 
@@ -28,10 +43,15 @@ const createProjectSchema = z
     endDate: z.string().date(),
     status: z.enum(['not_started', 'in_progress', 'completed', 'delayed']),
     pmMemberId: z.string().min(1),
+    projectLink: z.string().trim().max(500).optional().default(''),
   })
   .refine((value) => value.startDate <= value.endDate, {
     message: 'endDate must be greater than or equal to startDate',
     path: ['endDate'],
+  })
+  .refine((value) => isValidOptionalUrl(value.projectLink), {
+    message: 'projectLink must be a valid URL',
+    path: ['projectLink'],
   })
 
 const updatePhaseSchema = z
@@ -59,6 +79,35 @@ const updateProjectScheduleSchema = z
     message: 'endDate must be greater than or equal to startDate',
     path: ['endDate'],
   })
+
+const updateProjectLinkSchema = z
+  .object({
+    projectLink: z.string().trim().max(500),
+  })
+  .refine((value) => isValidOptionalUrl(value.projectLink), {
+    message: 'projectLink must be a valid URL',
+    path: ['projectLink'],
+  })
+
+const updateProjectPhasesSchema = z.object({
+  phases: z
+    .array(
+      z
+        .object({
+          id: z.string().min(1).optional(),
+          name: z.string().trim().min(1).max(100),
+          startWeek: z.number().int().min(1),
+          endWeek: z.number().int().min(1),
+          status: workStatusSchema,
+          progress: z.number().int().min(0).max(100),
+        })
+        .refine((value) => value.endWeek >= value.startWeek, {
+          message: 'endWeek must be greater than or equal to startWeek',
+          path: ['endWeek'],
+        }),
+    )
+    .min(1),
+})
 
 const updateProjectStructureSchema = z.object({
   pmMemberId: z.string().min(1),
@@ -198,6 +247,76 @@ projectRoutes.patch('/projects/:projectNumber/schedule', async (c) => {
     return c.json(detail)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update project schedule'
+    const status = message === 'Project not found' ? 404 : 400
+
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.patch('/projects/:projectNumber/link', async (c) => {
+  const paramsSchema = z.object({
+    projectNumber: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'projectNumber is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateProjectLinkSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const detail = await updateProjectLink(parsedParams.data.projectNumber, {
+      projectLink: parsedBody.data.projectLink.trim() || null,
+    })
+    return c.json(detail)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update project link'
+    const status = message === 'Project not found' ? 404 : 400
+
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.patch('/projects/:projectNumber/phases', async (c) => {
+  const paramsSchema = z.object({
+    projectNumber: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'projectNumber is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateProjectPhasesSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const detail = await updateProjectPhases(parsedParams.data.projectNumber, parsedBody.data)
+    return c.json(detail)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update project phases'
     const status = message === 'Project not found' ? 404 : 400
 
     return c.json({ message }, status)

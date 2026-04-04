@@ -7,6 +7,8 @@ import type {
   ProjectStructureAssignmentInput,
   ProjectAssignment,
   UpdatePhaseInput,
+  UpdateProjectLinkInput,
+  UpdateProjectPhasesInput,
   UpdateProjectScheduleInput,
   UpdateProjectStructureInput,
   WorkStatus,
@@ -32,6 +34,11 @@ function addDays(value: string, days: number) {
 
 function addWeeks(value: string, weeks: number) {
   return addDays(value, weeks * 7)
+}
+
+function normalizeProjectLink(projectLink: string | null | undefined) {
+  const normalized = projectLink?.trim()
+  return normalized ? normalized : null
 }
 
 function getMemberById(memberId: string, members: Member[]) {
@@ -182,6 +189,21 @@ function createAssignmentIdGenerator(projectId: string, assignments: ProjectAssi
   }
 }
 
+function createPhaseIdGenerator(projectId: string, phases: Phase[]) {
+  let nextSuffix =
+    phases
+      .filter((phase) => phase.projectId === projectId)
+      .map((phase) => Number(phase.id.split('-').at(-1)))
+      .filter((value) => Number.isFinite(value))
+      .reduce((max, value) => Math.max(max, value), 0) + 1
+
+  return () => {
+    const nextId = `ph-${projectId}-${nextSuffix}`
+    nextSuffix += 1
+    return nextId
+  }
+}
+
 function normalizeStructureAssignments(
   projectId: string,
   inputAssignments: ProjectStructureAssignmentInput[],
@@ -264,6 +286,7 @@ export async function createProject(input: CreateProjectInput) {
       endDate: input.endDate,
       status: input.status,
       pmMemberId: input.pmMemberId,
+      projectLink: normalizeProjectLink(input.projectLink),
     }
 
     store.projects.push(project)
@@ -376,6 +399,65 @@ export async function updateProjectSchedule(projectId: string, input: UpdateProj
 
     project.startDate = input.startDate
     project.endDate = input.endDate
+
+    return buildProjectDetailFromStore(projectId, store)
+  })
+}
+
+export async function updateProjectLink(projectId: string, input: UpdateProjectLinkInput) {
+  return updateStore(['projects'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    project.projectLink = normalizeProjectLink(input.projectLink)
+
+    return buildProjectDetailFromStore(projectId, store)
+  })
+}
+
+export async function updateProjectPhases(projectId: string, input: UpdateProjectPhasesInput) {
+  return updateStore(['projects', 'phases'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    if (input.phases.length === 0) {
+      throw new Error('At least one phase is required')
+    }
+
+    for (const phase of input.phases) {
+      if (!phase.name.trim()) {
+        throw new Error('phase name is required')
+      }
+
+      if (phase.startWeek < 1 || phase.endWeek < phase.startWeek) {
+        throw new Error('phase weeks are invalid')
+      }
+
+      if (phase.progress < 0 || phase.progress > 100) {
+        throw new Error('phase progress must be between 0 and 100')
+      }
+    }
+
+    const nextPhaseId = createPhaseIdGenerator(projectId, store.phases)
+    const nextPhases = input.phases.map((phase) => ({
+      id: phase.id ?? nextPhaseId(),
+      projectId,
+      name: phase.name.trim(),
+      startWeek: phase.startWeek,
+      endWeek: phase.endWeek,
+      status: phase.status,
+      progress: phase.progress,
+      assigneeMemberId: project.pmMemberId,
+    }))
+
+    store.phases = store.phases.filter((phase) => phase.projectId !== projectId).concat(nextPhases)
+    syncProjectStatus(projectId, store)
 
     return buildProjectDetailFromStore(projectId, store)
   })
