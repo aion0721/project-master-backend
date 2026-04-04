@@ -7,6 +7,7 @@ import type {
   ProjectStructureAssignmentInput,
   ProjectAssignment,
   UpdatePhaseInput,
+  UpdateProjectScheduleInput,
   UpdateProjectStructureInput,
   WorkStatus,
 } from '../types/domain.js'
@@ -115,10 +116,6 @@ function enrichMember(member: Member | undefined, members: Member[]) {
   }
 }
 
-function getNextProjectId(projects: Project[]) {
-  return `p${projects.length + 1}`
-}
-
 function deriveProjectStatus(projectPhases: Phase[]): WorkStatus {
   if (projectPhases.some((phase) => phase.status === '遅延')) {
     return '遅延'
@@ -136,17 +133,18 @@ function deriveProjectStatus(projectPhases: Phase[]): WorkStatus {
 }
 
 function buildProjectDetailFromStore(projectId: string, store: StoreData) {
-  const project = store.projects.find((item) => item.id === projectId)
+  const project = store.projects.find((item) => item.projectNumber === projectId)
 
   if (!project) {
     return null
   }
 
-  const projectPhases = getProjectPhases(project.id, store.phases)
-  const projectAssignments = store.assignments.filter((assignment) => assignment.projectId === project.id)
+  const projectPhases = getProjectPhases(project.projectNumber, store.phases)
+  const projectAssignments = store.assignments.filter(
+    (assignment) => assignment.projectId === project.projectNumber,
+  )
   const relevantMemberIds = new Set([
     project.pmMemberId,
-    ...projectPhases.map((phase) => phase.assigneeMemberId),
     ...projectAssignments.map((item) => item.memberId),
   ])
 
@@ -157,7 +155,6 @@ function buildProjectDetailFromStore(projectId: string, store: StoreData) {
     },
     phases: projectPhases.map((phase) => ({
       ...phase,
-      assignee: enrichMember(getMemberById(phase.assigneeMemberId, store.members), store.members),
       range: getPhaseRange(project, phase),
     })),
     assignments: projectAssignments.map((assignment) => ({
@@ -211,13 +208,13 @@ function normalizeStructureAssignments(
 }
 
 function syncProjectStatus(projectId: string, store: StoreData) {
-  const project = store.projects.find((item) => item.id === projectId)
+  const project = store.projects.find((item) => item.projectNumber === projectId)
 
   if (!project) {
     throw new Error('Project not found')
   }
 
-  project.status = deriveProjectStatus(getProjectPhases(project.id, store.phases))
+  project.status = deriveProjectStatus(getProjectPhases(project.projectNumber, store.phases))
   return project
 }
 
@@ -230,7 +227,7 @@ export async function listProjects() {
   const store = await getStore()
 
   return store.projects.map((project) => {
-    const projectPhases = getProjectPhases(project.id, store.phases)
+    const projectPhases = getProjectPhases(project.projectNumber, store.phases)
     const currentPhase = getCurrentPhase(projectPhases)
     const pm = getProjectPm(project, store.members)
 
@@ -255,9 +252,13 @@ export async function createProject(input: CreateProjectInput) {
       throw new Error('PM member does not exist')
     }
 
-    const projectId = getNextProjectId(store.projects)
+    if (store.projects.some((project) => project.projectNumber === input.projectNumber)) {
+      throw new Error('Project number already exists')
+    }
+
+    const projectId = input.projectNumber
     const project: Project = {
-      id: projectId,
+      projectNumber: projectId,
       name: input.name,
       startDate: input.startDate,
       endDate: input.endDate,
@@ -326,7 +327,7 @@ export async function updatePhase(phaseId: string, input: UpdatePhaseInput) {
 
 export async function updateProjectCurrentPhase(projectId: string, phaseId: string) {
   return updateStore(['phases', 'projects'], (store) => {
-    const project = store.projects.find((item) => item.id === projectId)
+    const project = store.projects.find((item) => item.projectNumber === projectId)
 
     if (!project) {
       throw new Error('Project not found')
@@ -361,9 +362,28 @@ export async function updateProjectCurrentPhase(projectId: string, phaseId: stri
   })
 }
 
+export async function updateProjectSchedule(projectId: string, input: UpdateProjectScheduleInput) {
+  return updateStore(['projects'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    if (input.startDate > input.endDate) {
+      throw new Error('endDate must be greater than or equal to startDate')
+    }
+
+    project.startDate = input.startDate
+    project.endDate = input.endDate
+
+    return buildProjectDetailFromStore(projectId, store)
+  })
+}
+
 export async function updateProjectStructure(projectId: string, input: UpdateProjectStructureInput) {
   return updateStore(['projects', 'assignments'], (store) => {
-    const project = store.projects.find((item) => item.id === projectId)
+    const project = store.projects.find((item) => item.projectNumber === projectId)
 
     if (!project) {
       throw new Error('Project not found')
@@ -413,11 +433,11 @@ export async function getCrossProjectWeeks() {
   return {
     weeks: weekSlots,
     projects: store.projects.map((project) => {
-      const projectPhases = getProjectPhases(project.id, store.phases)
+      const projectPhases = getProjectPhases(project.projectNumber, store.phases)
       const pm = getProjectPm(project, store.members)
 
       return {
-        id: project.id,
+        projectNumber: project.projectNumber,
         name: project.name,
         status: project.status,
         pm: enrichMember(pm, store.members),

@@ -63,7 +63,7 @@ export async function toggleBookmark(userId: string, projectId: string) {
       throw new Error('User not found')
     }
 
-    const projectExists = store.projects.some((project) => project.id === projectId)
+    const projectExists = store.projects.some((project) => project.projectNumber === projectId)
 
     if (!projectExists) {
       throw new Error('Project not found')

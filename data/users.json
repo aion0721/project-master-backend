@@ -1,10 +1,4 @@
 [
-  {
-    "id": "u1",
-    "username": "demo",
-    "bookmarkedProjectIds": [
-      "p1",
-      "p5"
-    ]
-  }
+  { "id": "u1", "username": "demo", "bookmarkedProjectIds": ["PRJ-001", "PRJ-005"] },
+  { "id": "u2", "username": "pit02307", "bookmarkedProjectIds": [] }
 ]

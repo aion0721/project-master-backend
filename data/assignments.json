@@ -1,194 +1,34 @@
 [
-  {
-    "id": "as-p1-1",
-    "projectId": "p1",
-    "memberId": "m1",
-    "responsibility": "PM"
-  },
-  {
-    "id": "as-p1-2",
-    "projectId": "p1",
-    "memberId": "m8",
-    "responsibility": "基礎検討"
-  },
-  {
-    "id": "as-p1-3",
-    "projectId": "p1",
-    "memberId": "m2",
-    "responsibility": "基本設計"
-  },
-  {
-    "id": "as-p1-4",
-    "projectId": "p1",
-    "memberId": "m3",
-    "responsibility": "詳細設計"
-  },
-  {
-    "id": "as-p1-5",
-    "projectId": "p1",
-    "memberId": "m7",
-    "responsibility": "OS"
-  },
-  {
-    "id": "as-p1-6",
-    "projectId": "p1",
-    "memberId": "m5",
-    "responsibility": "テスト"
-  },
-  {
-    "id": "as-p1-7",
-    "projectId": "p1",
-    "memberId": "m4",
-    "responsibility": "インフラ統括"
-  },
-  {
-    "id": "as-p2-1",
-    "projectId": "p2",
-    "memberId": "m6",
-    "responsibility": "PM"
-  },
-  {
-    "id": "as-p2-2",
-    "projectId": "p2",
-    "memberId": "m2",
-    "responsibility": "基本設計"
-  },
-  {
-    "id": "as-p2-3",
-    "projectId": "p2",
-    "memberId": "m3",
-    "responsibility": "詳細設計"
-  },
-  {
-    "id": "as-p2-4",
-    "projectId": "p2",
-    "memberId": "m7",
-    "responsibility": "OS"
-  },
-  {
-    "id": "as-p2-5",
-    "projectId": "p2",
-    "memberId": "m10",
-    "responsibility": "テスト"
-  },
-  {
-    "id": "as-p2-6",
-    "projectId": "p2",
-    "memberId": "m4",
-    "responsibility": "インフラ統括"
-  },
-  {
-    "id": "as-p3-1",
-    "projectId": "p3",
-    "memberId": "m1",
-    "responsibility": "PM"
-  },
-  {
-    "id": "as-p3-2",
-    "projectId": "p3",
-    "memberId": "m8",
-    "responsibility": "基礎検討"
-  },
-  {
-    "id": "as-p3-3",
-    "projectId": "p3",
-    "memberId": "m9",
-    "responsibility": "詳細設計"
-  },
-  {
-    "id": "as-p3-4",
-    "projectId": "p3",
-    "memberId": "m5",
-    "responsibility": "テスト"
-  },
-  {
-    "id": "as-p3-5",
-    "projectId": "p3",
-    "memberId": "m7",
-    "responsibility": "OS"
-  },
-  {
-    "id": "as-p4-1",
-    "projectId": "p4",
-    "memberId": "m6",
-    "responsibility": "PM"
-  },
-  {
-    "id": "as-p4-2",
-    "projectId": "p4",
-    "memberId": "m8",
-    "responsibility": "基礎検討"
-  },
-  {
-    "id": "as-p4-3",
-    "projectId": "p4",
-    "memberId": "m2",
-    "responsibility": "基本設計"
-  },
-  {
-    "id": "as-p4-4",
-    "projectId": "p4",
-    "memberId": "m3",
-    "responsibility": "詳細設計"
-  },
-  {
-    "id": "as-p4-5",
-    "projectId": "p4",
-    "memberId": "m10",
-    "responsibility": "テスト"
-  },
-  {
-    "id": "as-p4-6",
-    "projectId": "p4",
-    "memberId": "m7",
-    "responsibility": "OS"
-  },
-  {
-    "id": "as-p5-1",
-    "projectId": "p5",
-    "memberId": "m1",
-    "responsibility": "PM"
-  },
-  {
-    "id": "as-p5-2",
-    "projectId": "p5",
-    "memberId": "m2",
-    "responsibility": "基本設計"
-  },
-  {
-    "id": "as-p5-3",
-    "projectId": "p5",
-    "memberId": "m9",
-    "responsibility": "詳細設計"
-  },
-  {
-    "id": "as-p5-4",
-    "projectId": "p5",
-    "memberId": "m10",
-    "responsibility": "テスト"
-  },
-  {
-    "id": "as-p5-5",
-    "projectId": "p5",
-    "memberId": "m7",
-    "responsibility": "OS"
-  },
-  {
-    "id": "as-p5-6",
-    "projectId": "p5",
-    "memberId": "m4",
-    "responsibility": "インフラ統括"
-  },
-  {
-    "id": "as-p6-1",
-    "projectId": "p6",
-    "memberId": "m6",
-    "responsibility": "PM"
-  },
-  {
-    "id": "as-p6-2",
-    "projectId": "p6",
-    "memberId": "m2",
-    "responsibility": "テスト"
-  }
+  { "id": "as-p1-1", "projectId": "PRJ-001", "memberId": "m1", "responsibility": "PM" },
+  { "id": "as-p1-2", "projectId": "PRJ-001", "memberId": "m8", "responsibility": "基礎検討" },
+  { "id": "as-p1-3", "projectId": "PRJ-001", "memberId": "m2", "responsibility": "基本設計" },
+  { "id": "as-p1-4", "projectId": "PRJ-001", "memberId": "m3", "responsibility": "詳細設計" },
+  { "id": "as-p1-5", "projectId": "PRJ-001", "memberId": "m7", "responsibility": "OS" },
+  { "id": "as-p1-6", "projectId": "PRJ-001", "memberId": "m5", "responsibility": "テスト" },
+  { "id": "as-p1-7", "projectId": "PRJ-001", "memberId": "m4", "responsibility": "インフラ統括" },
+  { "id": "as-p2-1", "projectId": "PRJ-002", "memberId": "m6", "responsibility": "PM" },
+  { "id": "as-p2-2", "projectId": "PRJ-002", "memberId": "m2", "responsibility": "基本設計" },
+  { "id": "as-p2-3", "projectId": "PRJ-002", "memberId": "m3", "responsibility": "詳細設計" },
+  { "id": "as-p2-4", "projectId": "PRJ-002", "memberId": "m7", "responsibility": "OS" },
+  { "id": "as-p2-5", "projectId": "PRJ-002", "memberId": "m10", "responsibility": "テスト" },
+  { "id": "as-p2-6", "projectId": "PRJ-002", "memberId": "m4", "responsibility": "インフラ統括" },
+  { "id": "as-p3-1", "projectId": "PRJ-003", "memberId": "m1", "responsibility": "PM" },
+  { "id": "as-p3-2", "projectId": "PRJ-003", "memberId": "m8", "responsibility": "基礎検討" },
+  { "id": "as-p3-3", "projectId": "PRJ-003", "memberId": "m9", "responsibility": "詳細設計" },
+  { "id": "as-p3-4", "projectId": "PRJ-003", "memberId": "m5", "responsibility": "テスト" },
+  { "id": "as-p3-5", "projectId": "PRJ-003", "memberId": "m7", "responsibility": "OS" },
+  { "id": "as-p4-1", "projectId": "PRJ-004", "memberId": "m6", "responsibility": "PM" },
+  { "id": "as-p4-2", "projectId": "PRJ-004", "memberId": "m8", "responsibility": "基礎検討" },
+  { "id": "as-p4-3", "projectId": "PRJ-004", "memberId": "m2", "responsibility": "基本設計" },
+  { "id": "as-p4-4", "projectId": "PRJ-004", "memberId": "m3", "responsibility": "詳細設計" },
+  { "id": "as-p4-5", "projectId": "PRJ-004", "memberId": "m10", "responsibility": "テスト" },
+  { "id": "as-p4-6", "projectId": "PRJ-004", "memberId": "m7", "responsibility": "OS" },
+  { "id": "as-p5-1", "projectId": "PRJ-005", "memberId": "m1", "responsibility": "PM" },
+  { "id": "as-p5-2", "projectId": "PRJ-005", "memberId": "m2", "responsibility": "基本設計" },
+  { "id": "as-p5-3", "projectId": "PRJ-005", "memberId": "m9", "responsibility": "詳細設計" },
+  { "id": "as-p5-4", "projectId": "PRJ-005", "memberId": "m10", "responsibility": "テスト" },
+  { "id": "as-p5-5", "projectId": "PRJ-005", "memberId": "m7", "responsibility": "OS" },
+  { "id": "as-p5-6", "projectId": "PRJ-005", "memberId": "m4", "responsibility": "インフラ統括" },
+  { "id": "as-p6-1", "projectId": "PRJ-006", "memberId": "m6", "responsibility": "PM" },
+  { "id": "as-p6-2", "projectId": "PRJ-006", "memberId": "m2", "responsibility": "テスト" }
 ]

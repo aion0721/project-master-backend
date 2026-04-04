@@ -14,7 +14,7 @@ const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
 const phaseNameSchema = z.enum(['基礎検討', '基本設計', '詳細設計', 'テスト', '移行'])
 
 const projectSchema = z.object({
-  id: z.string().min(1),
+  projectNumber: z.string().min(1),
   name: z.string().min(1),
   startDate: z.string().date(),
   endDate: z.string().date(),
