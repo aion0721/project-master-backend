@@ -6,6 +6,7 @@ import {
   listMembers,
   listProjects,
   updatePhaseSchedule,
+  updateProjectStructure,
 } from '../lib/project-service.js'
 
 const workStatusSchema = z.enum(['not_started', 'in_progress', 'completed', 'delayed'])
@@ -39,6 +40,17 @@ const updatePhaseScheduleSchema = z
     message: 'endWeek must be greater than or equal to startWeek',
     path: ['endWeek'],
   })
+
+const updateProjectStructureSchema = z.object({
+  pmMemberId: z.string().min(1),
+  assignments: z.array(
+    z.object({
+      id: z.string().min(1).optional(),
+      memberId: z.string().min(1),
+      responsibility: z.string().trim().min(1).max(100),
+    }),
+  ),
+})
 
 export const projectRoutes = new Hono()
 
@@ -112,6 +124,45 @@ projectRoutes.get('/projects/:projectId', async (c) => {
   }
 
   return c.json(detail)
+})
+
+projectRoutes.patch('/projects/:projectId/structure', async (c) => {
+  const paramsSchema = z.object({
+    projectId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json(
+      {
+        message: 'projectId is invalid',
+      },
+      400,
+    )
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateProjectStructureSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const detail = await updateProjectStructure(parsedParams.data.projectId, parsedBody.data)
+    return c.json(detail)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update project structure'
+    const status = message === 'Project not found' ? 404 : 400
+
+    return c.json({ message }, status)
+  }
 })
 
 projectRoutes.patch('/phases/:phaseId', async (c) => {

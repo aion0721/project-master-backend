@@ -4,7 +4,10 @@ import type {
   Member,
   Phase,
   Project,
+  ProjectStructureAssignmentInput,
+  ProjectAssignment,
   UpdatePhaseScheduleInput,
+  UpdateProjectStructureInput,
 } from '../types/domain.js'
 
 const phaseTemplates = [
@@ -150,6 +153,46 @@ function buildProjectDetailFromStore(projectId: string, store: StoreData) {
   }
 }
 
+function createAssignmentIdGenerator(projectId: string, assignments: ProjectAssignment[]) {
+  let nextSuffix =
+    assignments
+      .filter((assignment) => assignment.projectId === projectId)
+      .map((assignment) => Number(assignment.id.split('-').at(-1)))
+      .filter((value) => Number.isFinite(value))
+      .reduce((max, value) => Math.max(max, value), 0) + 1
+
+  return () => {
+    const nextId = `as-${projectId}-${nextSuffix}`
+    nextSuffix += 1
+    return nextId
+  }
+}
+
+function normalizeStructureAssignments(
+  projectId: string,
+  inputAssignments: ProjectStructureAssignmentInput[],
+  existingAssignments: ProjectAssignment[],
+  pmMemberId: string,
+) {
+  const nextAssignmentId = createAssignmentIdGenerator(projectId, existingAssignments)
+  const existingPmAssignment = existingAssignments.find((assignment) => assignment.responsibility === 'PM')
+
+  return [
+    {
+      id: existingPmAssignment?.id ?? nextAssignmentId(),
+      projectId,
+      memberId: pmMemberId,
+      responsibility: 'PM',
+    },
+    ...inputAssignments.map((assignment) => ({
+      id: assignment.id ?? nextAssignmentId(),
+      projectId,
+      memberId: assignment.memberId,
+      responsibility: assignment.responsibility,
+    })),
+  ]
+}
+
 export async function listMembers() {
   const store = await getStore()
   return store.members.map((member) => enrichMember(member, store.members))
@@ -239,6 +282,51 @@ export async function updatePhaseSchedule(phaseId: string, input: UpdatePhaseSch
     phase.endWeek = input.endWeek
 
     return { ...phase }
+  })
+}
+
+export async function updateProjectStructure(projectId: string, input: UpdateProjectStructureInput) {
+  return updateStore(['projects', 'assignments'], (store) => {
+    const project = store.projects.find((item) => item.id === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    if (!getMemberById(input.pmMemberId, store.members)) {
+      throw new Error('PM member does not exist')
+    }
+
+    for (const assignment of input.assignments) {
+      if (!assignment.responsibility.trim()) {
+        throw new Error('responsibility is required')
+      }
+
+      if (!getMemberById(assignment.memberId, store.members)) {
+        throw new Error('Assigned member does not exist')
+      }
+    }
+
+    project.pmMemberId = input.pmMemberId
+
+    const currentProjectAssignments = store.assignments.filter(
+      (assignment) => assignment.projectId === projectId,
+    )
+    const nextAssignments = normalizeStructureAssignments(
+      projectId,
+      input.assignments.map((assignment) => ({
+        ...assignment,
+        responsibility: assignment.responsibility.trim(),
+      })),
+      currentProjectAssignments,
+      input.pmMemberId,
+    )
+
+    store.assignments = store.assignments
+      .filter((assignment) => assignment.projectId !== projectId)
+      .concat(nextAssignments)
+
+    return buildProjectDetailFromStore(projectId, store)
   })
 }
 

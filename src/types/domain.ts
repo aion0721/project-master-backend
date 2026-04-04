@@ -48,3 +48,14 @@ export interface UpdatePhaseScheduleInput {
   startWeek: number
   endWeek: number
 }
+
+export interface ProjectStructureAssignmentInput {
+  id?: string
+  memberId: string
+  responsibility: string
+}
+
+export interface UpdateProjectStructureInput {
+  pmMemberId: string
+  assignments: ProjectStructureAssignmentInput[]
+}
