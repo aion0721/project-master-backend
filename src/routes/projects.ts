@@ -5,11 +5,11 @@ import {
   getProjectDetail,
   listMembers,
   listProjects,
-  updatePhaseSchedule,
+  updatePhase,
   updateProjectStructure,
 } from '../lib/project-service.js'
 
-const workStatusSchema = z.enum(['not_started', 'in_progress', 'completed', 'delayed'])
+const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
 
 const workStatusLabelMap = {
   not_started: '未着手',
@@ -23,7 +23,7 @@ const createProjectSchema = z
     name: z.string().min(1).max(100),
     startDate: z.string().date(),
     endDate: z.string().date(),
-    status: workStatusSchema,
+    status: z.enum(['not_started', 'in_progress', 'completed', 'delayed']),
     pmMemberId: z.string().min(1),
   })
   .refine((value) => value.startDate <= value.endDate, {
@@ -31,10 +31,12 @@ const createProjectSchema = z
     path: ['endDate'],
   })
 
-const updatePhaseScheduleSchema = z
+const updatePhaseSchema = z
   .object({
     startWeek: z.number().int().min(1),
     endWeek: z.number().int().min(1),
+    status: workStatusSchema,
+    progress: z.number().int().min(0).max(100),
   })
   .refine((value) => value.endWeek >= value.startWeek, {
     message: 'endWeek must be greater than or equal to startWeek',
@@ -181,7 +183,7 @@ projectRoutes.patch('/phases/:phaseId', async (c) => {
   }
 
   const body = await c.req.json()
-  const parsedBody = updatePhaseScheduleSchema.safeParse(body)
+  const parsedBody = updatePhaseSchema.safeParse(body)
 
   if (!parsedBody.success) {
     return c.json(
@@ -194,11 +196,11 @@ projectRoutes.patch('/phases/:phaseId', async (c) => {
   }
 
   try {
-    const phase = await updatePhaseSchedule(parsedParams.data.phaseId, parsedBody.data)
-    return c.json({ phase })
+    const result = await updatePhase(parsedParams.data.phaseId, parsedBody.data)
+    return c.json(result)
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update phase schedule'
-    const status = message === 'Phase not found' ? 404 : 400
+    const message = error instanceof Error ? error.message : 'Failed to update phase'
+    const status = message === 'Phase not found' || message === 'Project not found' ? 404 : 400
 
     return c.json({ message }, status)
   }

@@ -44,9 +44,11 @@ export interface CreateProjectInput {
   pmMemberId: string
 }
 
-export interface UpdatePhaseScheduleInput {
+export interface UpdatePhaseInput {
   startWeek: number
   endWeek: number
+  status: WorkStatus
+  progress: number
 }
 
 export interface ProjectStructureAssignmentInput {

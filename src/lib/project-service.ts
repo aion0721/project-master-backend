@@ -6,8 +6,9 @@ import type {
   Project,
   ProjectStructureAssignmentInput,
   ProjectAssignment,
-  UpdatePhaseScheduleInput,
+  UpdatePhaseInput,
   UpdateProjectStructureInput,
+  WorkStatus,
 } from '../types/domain.js'
 
 const phaseTemplates = [
@@ -116,6 +117,22 @@ function enrichMember(member: Member | undefined, members: Member[]) {
 
 function getNextProjectId(projects: Project[]) {
   return `p${projects.length + 1}`
+}
+
+function deriveProjectStatus(projectPhases: Phase[]): WorkStatus {
+  if (projectPhases.some((phase) => phase.status === '遅延')) {
+    return '遅延'
+  }
+
+  if (projectPhases.every((phase) => phase.status === '完了')) {
+    return '完了'
+  }
+
+  if (projectPhases.some((phase) => phase.status === '進行中' || phase.status === '完了')) {
+    return '進行中'
+  }
+
+  return '未着手'
 }
 
 function buildProjectDetailFromStore(projectId: string, store: StoreData) {
@@ -262,8 +279,8 @@ export async function createProject(input: CreateProjectInput) {
   })
 }
 
-export async function updatePhaseSchedule(phaseId: string, input: UpdatePhaseScheduleInput) {
-  return updateStore(['phases'], (store) => {
+export async function updatePhase(phaseId: string, input: UpdatePhaseInput) {
+  return updateStore(['phases', 'projects'], (store) => {
     const phase = store.phases.find((item) => item.id === phaseId)
 
     if (!phase) {
@@ -278,10 +295,28 @@ export async function updatePhaseSchedule(phaseId: string, input: UpdatePhaseSch
       throw new Error('endWeek must be greater than or equal to startWeek')
     }
 
+    if (input.progress < 0 || input.progress > 100) {
+      throw new Error('progress must be between 0 and 100')
+    }
+
     phase.startWeek = input.startWeek
     phase.endWeek = input.endWeek
+    phase.status = input.status
+    phase.progress = input.progress
 
-    return { ...phase }
+    const project = store.projects.find((item) => item.id === phase.projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    const projectPhases = getProjectPhases(project.id, store.phases)
+    project.status = deriveProjectStatus(projectPhases)
+
+    return {
+      phase: { ...phase },
+      project: { ...project },
+    }
   })
 }
 
