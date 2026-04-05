@@ -1,4 +1,4 @@
-import { getStore, updateStore, type StoreData } from './file-store.js'
+﻿import { getStore, updateStore, type StoreData } from './file-store.js'
 import type {
   CreateMemberInput,
   CreateProjectInput,
@@ -299,9 +299,11 @@ export async function createMember(input: CreateMemberInput) {
   return updateStore(['members'], (store) => {
     const memberId = input.id.trim()
     const name = input.name.trim()
+    const departmentCode = input.departmentCode.trim()
+    const departmentName = input.departmentName.trim()
     const role = input.role.trim()
 
-    if (!memberId || !name || !role) {
+    if (!memberId || !name || !departmentCode || !departmentName || !role) {
       throw new Error('Member fields are required')
     }
 
@@ -316,9 +318,12 @@ export async function createMember(input: CreateMemberInput) {
     const member: Member = {
       id: memberId,
       name,
+      departmentCode,
+      departmentName,
       role,
       managerId: input.managerId,
       bookmarkedProjectIds: [],
+      defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
     }
 
     store.members.push(member)
@@ -338,9 +343,11 @@ export async function updateMember(memberId: string, input: UpdateMemberInput) {
     }
 
     const name = input.name.trim()
+    const departmentCode = input.departmentCode.trim()
+    const departmentName = input.departmentName.trim()
     const role = input.role.trim()
 
-    if (!name || !role) {
+    if (!name || !departmentCode || !departmentName || !role) {
       throw new Error('Member fields are required')
     }
 
@@ -353,6 +360,8 @@ export async function updateMember(memberId: string, input: UpdateMemberInput) {
     }
 
     member.name = name
+    member.departmentCode = departmentCode
+    member.departmentName = departmentName
     member.role = role
     member.managerId = input.managerId
 

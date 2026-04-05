@@ -75,12 +75,16 @@ const updateSystemSchema = z.object({
 const createMemberSchema = z.object({
   id: z.string().trim().min(1).max(50),
   name: z.string().trim().min(1).max(100),
+  departmentCode: z.string().trim().min(1).max(50),
+  departmentName: z.string().trim().min(1).max(100),
   role: z.string().trim().min(1).max(100),
   managerId: z.string().min(1).nullable(),
 })
 
 const updateMemberSchema = z.object({
   name: z.string().trim().min(1).max(100),
+  departmentCode: z.string().trim().min(1).max(50),
+  departmentName: z.string().trim().min(1).max(100),
   role: z.string().trim().min(1).max(100),
   managerId: z.string().min(1).nullable(),
 })

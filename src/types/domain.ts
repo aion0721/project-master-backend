@@ -40,6 +40,8 @@ export interface ProjectEvent {
 export interface Member {
   id: string
   name: string
+  departmentCode: string
+  departmentName: string
   role: string
   managerId: string | null
   bookmarkedProjectIds: string[]
@@ -83,12 +85,16 @@ export interface CreateProjectInput {
 export interface CreateMemberInput {
   id: string
   name: string
+  departmentCode: string
+  departmentName: string
   role: string
   managerId: string | null
 }
 
 export interface UpdateMemberInput {
   name: string
+  departmentCode: string
+  departmentName: string
   role: string
   managerId: string | null
 }

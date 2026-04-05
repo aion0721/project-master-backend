@@ -7,7 +7,10 @@ function normalizeMemberKey(memberKey: string) {
   return memberKey.trim()
 }
 
-function cloneMember(member: Partial<Member> & Pick<Member, 'id' | 'name' | 'role' | 'managerId'>) {
+function cloneMember(
+  member: Partial<Member> &
+    Pick<Member, 'id' | 'name' | 'departmentCode' | 'departmentName' | 'role' | 'managerId'>,
+) {
   const defaultProjectStatusFilters = member.defaultProjectStatusFilters ?? allWorkStatuses
 
   return {

@@ -70,6 +70,8 @@ const eventSchema = z.object({
 const memberSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
+  departmentCode: z.string().min(1),
+  departmentName: z.string().min(1),
   role: z.string().min(1),
   managerId: z.string().min(1).nullable(),
   bookmarkedProjectIds: z.array(z.string().min(1)).optional().default([]),

@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   ManagedSystem,
   Member,
   Phase,
@@ -12,6 +12,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm1',
     name: '田中',
+    departmentCode: 'DEP-BIZ',
+    departmentName: '事業推進部',
     role: 'PM',
     managerId: null,
     bookmarkedProjectIds: ['PRJ-001', 'PRJ-005'],
@@ -20,6 +22,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm2',
     name: '山本',
+    departmentCode: 'DEP-SYS-DESIGN',
+    departmentName: 'システム設計部',
     role: '基本設計リーダー',
     managerId: 'm1',
     bookmarkedProjectIds: [],
@@ -28,6 +32,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm3',
     name: '鈴木',
+    departmentCode: 'DEP-SYS-DESIGN',
+    departmentName: 'システム設計部',
     role: '詳細設計エンジニア',
     managerId: 'm2',
     bookmarkedProjectIds: [],
@@ -36,6 +42,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm4',
     name: '高橋',
+    departmentCode: 'DEP-INFRA',
+    departmentName: 'インフラ基盤部',
     role: 'インフラリーダー',
     managerId: 'm1',
     bookmarkedProjectIds: [],
@@ -44,6 +52,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm5',
     name: '渡辺',
+    departmentCode: 'DEP-QA',
+    departmentName: '品質保証部',
     role: 'QAエンジニア',
     managerId: 'm4',
     bookmarkedProjectIds: [],
@@ -52,6 +62,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm6',
     name: '中村',
+    departmentCode: 'DEP-PMO',
+    departmentName: 'PMO室',
     role: 'PMO',
     managerId: 'm1',
     bookmarkedProjectIds: [],
@@ -60,6 +72,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm7',
     name: '小林',
+    departmentCode: 'DEP-INFRA',
+    departmentName: 'インフラ基盤部',
     role: 'OSスペシャリスト',
     managerId: 'm4',
     bookmarkedProjectIds: [],
@@ -68,6 +82,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm8',
     name: '木村',
+    departmentCode: 'DEP-ARCH',
+    departmentName: 'アーキテクト室',
     role: 'アーキテクト',
     managerId: 'm2',
     bookmarkedProjectIds: [],
@@ -76,6 +92,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm9',
     name: '加藤',
+    departmentCode: 'DEP-APP',
+    departmentName: 'アプリ開発部',
     role: 'バックエンドエンジニア',
     managerId: 'm2',
     bookmarkedProjectIds: [],
@@ -84,6 +102,8 @@ export const seedMembers: Member[] = [
   {
     id: 'm10',
     name: '伊藤',
+    departmentCode: 'DEP-QA',
+    departmentName: '品質保証部',
     role: 'テストリーダー',
     managerId: 'm4',
     bookmarkedProjectIds: [],
