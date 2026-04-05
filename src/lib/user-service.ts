@@ -1,14 +1,22 @@
+import type { Member } from '../types/domain.js'
 import { getStore, updateStore } from './file-store.js'
+
+const allWorkStatuses: NonNullable<Member['defaultProjectStatusFilters']> = ['未着手', '進行中', '遅延', '完了']
 
 function normalizeMemberKey(memberKey: string) {
   return memberKey.trim()
 }
 
-function cloneMember<T extends { bookmarkedProjectIds: string[] }>(member: T) {
+function cloneMember(member: Partial<Member> & Pick<Member, 'id' | 'name' | 'role' | 'managerId'>) {
+  const defaultProjectStatusFilters = member.defaultProjectStatusFilters ?? allWorkStatuses
+
   return {
     ...member,
-    bookmarkedProjectIds: [...member.bookmarkedProjectIds],
-  }
+    bookmarkedProjectIds: [...(member.bookmarkedProjectIds ?? [])],
+    defaultProjectStatusFilters: allWorkStatuses.filter((status) =>
+      defaultProjectStatusFilters.includes(status),
+    ),
+  } satisfies Member
 }
 
 export async function getUserById(memberId: string) {
@@ -55,8 +63,27 @@ export async function toggleBookmark(memberId: string, projectId: string) {
     const alreadyBookmarked = member.bookmarkedProjectIds.includes(projectId)
 
     member.bookmarkedProjectIds = alreadyBookmarked
-      ? member.bookmarkedProjectIds.filter((id) => id !== projectId)
+      ? member.bookmarkedProjectIds.filter((id: string) => id !== projectId)
       : [...member.bookmarkedProjectIds, projectId]
+
+    return cloneMember(member)
+  })
+}
+
+export async function updateDefaultProjectStatusFilters(
+  memberId: string,
+  defaultProjectStatusFilters: NonNullable<Member['defaultProjectStatusFilters']>,
+) {
+  return updateStore(['members'], (store) => {
+    const member = store.members.find((item) => item.id === memberId)
+
+    if (!member) {
+      throw new Error('Member not found')
+    }
+
+    member.defaultProjectStatusFilters = allWorkStatuses.filter((status) =>
+      defaultProjectStatusFilters.includes(status),
+    )
 
     return cloneMember(member)
   })

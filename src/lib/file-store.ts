@@ -8,15 +8,11 @@ import {
   seedPhases,
   seedProjects,
 } from '../data/seedData.js'
-import type {
-  Member,
-  Phase,
-  Project,
-  ProjectAssignment,
-  ProjectEvent,
-} from '../types/domain.js'
+import type { Member, Phase, Project, ProjectAssignment, ProjectEvent, WorkStatus } from '../types/domain.js'
 
-const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
+const allWorkStatuses: WorkStatus[] = ['未着手', '進行中', '遅延', '完了']
+
+const workStatusSchema = z.enum(allWorkStatuses)
 const projectLinkSchema = z.object({
   label: z.string().min(1),
   url: z.string().url(),
@@ -65,6 +61,7 @@ const memberSchema = z.object({
   role: z.string().min(1),
   managerId: z.string().min(1).nullable(),
   bookmarkedProjectIds: z.array(z.string().min(1)).optional().default([]),
+  defaultProjectStatusFilters: z.array(workStatusSchema).optional().default([...allWorkStatuses]),
 })
 
 const assignmentSchema = z.object({
@@ -129,6 +126,7 @@ function cloneStore(store: StoreData): StoreData {
     members: cloneEntries(store.members).map((member) => ({
       ...member,
       bookmarkedProjectIds: [...member.bookmarkedProjectIds],
+      defaultProjectStatusFilters: [...(member.defaultProjectStatusFilters ?? allWorkStatuses)],
     })),
     assignments: cloneEntries(store.assignments),
   }

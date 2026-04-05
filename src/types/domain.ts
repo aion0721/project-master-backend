@@ -42,6 +42,7 @@ export interface Member {
   role: string
   managerId: string | null
   bookmarkedProjectIds: string[]
+  defaultProjectStatusFilters?: WorkStatus[]
 }
 
 export interface ProjectAssignment {
