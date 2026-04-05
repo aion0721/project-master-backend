@@ -15,6 +15,7 @@ import type {
   UpdateProjectEventsInput,
   UpdatePhaseInput,
   UpdateProjectLinksInput,
+  UpdateProjectSystemsInput,
   UpdateProjectPhasesInput,
   UpdateProjectScheduleInput,
   UpdateProjectStructureInput,
@@ -648,6 +649,26 @@ export async function updateProjectLinks(projectId: string, input: UpdateProject
     }
 
     project.projectLinks = normalizeProjectLinks(input.projectLinks)
+
+    return buildProjectDetailFromStore(projectId, store)
+  })
+}
+
+export async function updateProjectSystems(projectId: string, input: UpdateProjectSystemsInput) {
+  return updateStore(['projects'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    const relatedSystemIds = [...new Set(input.relatedSystemIds ?? [])]
+
+    if (relatedSystemIds.some((systemId) => !getSystemById(systemId, store.systems))) {
+      throw new Error('Related system does not exist')
+    }
+
+    project.relatedSystemIds = relatedSystemIds
 
     return buildProjectDetailFromStore(projectId, store)
   })

@@ -95,6 +95,10 @@ export interface UpdateProjectLinksInput {
   projectLinks: ProjectLink[]
 }
 
+export interface UpdateProjectSystemsInput {
+  relatedSystemIds: string[]
+}
+
 export interface UpdateProjectPhasesInput {
   phases: Array<{
     id?: string
