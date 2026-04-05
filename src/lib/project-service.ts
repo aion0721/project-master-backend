@@ -2,6 +2,7 @@ import { getStore, updateStore, type StoreData } from './file-store.js'
 import type {
   CreateMemberInput,
   CreateProjectInput,
+  CreateSystemRelationInput,
   CreateSystemInput,
   ManagedSystem,
   Member,
@@ -11,6 +12,7 @@ import type {
   ProjectStructureAssignmentInput,
   ProjectAssignment,
   ProjectEvent,
+  SystemRelation,
   UpdateMemberInput,
   UpdateProjectEventsInput,
   UpdatePhaseInput,
@@ -60,6 +62,10 @@ function getMemberById(memberId: string, members: Member[]) {
 
 function getSystemById(systemId: string, systems: ManagedSystem[]) {
   return systems.find((system) => system.id === systemId)
+}
+
+function getSystemRelationById(relationId: string, systemRelations: SystemRelation[]) {
+  return systemRelations.find((relation) => relation.id === relationId)
 }
 
 function getProjectPhases(projectId: string, phases: Phase[]) {
@@ -393,6 +399,11 @@ export async function listSystems() {
   return store.systems.map((system) => ({ ...system }))
 }
 
+export async function listSystemRelations() {
+  const store = await getStore()
+  return store.systemRelations.map((relation) => ({ ...relation }))
+}
+
 export async function createSystem(input: CreateSystemInput) {
   return updateStore(['systems'], (store) => {
     const id = input.id.trim()
@@ -468,8 +479,74 @@ export async function deleteSystem(systemId: string) {
       throw new Error('System is linked to a project')
     }
 
+    if (
+      store.systemRelations.some(
+        (relation) => relation.sourceSystemId === systemId || relation.targetSystemId === systemId,
+      )
+    ) {
+      throw new Error('System is linked to a system relation')
+    }
+
     store.systems = store.systems.filter((item) => item.id !== systemId)
     return { systemId }
+  })
+}
+
+export async function createSystemRelation(input: CreateSystemRelationInput) {
+  return updateStore(['systemRelations'], (store) => {
+    const sourceSystemId = input.sourceSystemId.trim()
+    const targetSystemId = input.targetSystemId.trim()
+    const note = input.note?.trim() || null
+
+    if (!sourceSystemId || !targetSystemId) {
+      throw new Error('System relation fields are required')
+    }
+
+    if (sourceSystemId === targetSystemId) {
+      throw new Error('System relation cannot point to the same system')
+    }
+
+    if (!getSystemById(sourceSystemId, store.systems) || !getSystemById(targetSystemId, store.systems)) {
+      throw new Error('System in relation does not exist')
+    }
+
+    if (
+      store.systemRelations.some(
+        (relation) =>
+          relation.sourceSystemId === sourceSystemId && relation.targetSystemId === targetSystemId,
+      )
+    ) {
+      throw new Error('System relation already exists')
+    }
+
+    const existingIds = store.systemRelations
+      .map((relation) => Number(relation.id.replace('rel-', '')))
+      .filter((value) => Number.isFinite(value))
+    const nextId = `rel-${String((existingIds.length > 0 ? Math.max(...existingIds) : 0) + 1).padStart(3, '0')}`
+
+    const relation: SystemRelation = {
+      id: nextId,
+      sourceSystemId,
+      targetSystemId,
+      note,
+    }
+
+    store.systemRelations.push(relation)
+
+    return { relation }
+  })
+}
+
+export async function deleteSystemRelation(relationId: string) {
+  return updateStore(['systemRelations'], (store) => {
+    const relation = getSystemRelationById(relationId, store.systemRelations)
+
+    if (!relation) {
+      throw new Error('System relation not found')
+    }
+
+    store.systemRelations = store.systemRelations.filter((item) => item.id !== relationId)
+    return { relationId }
   })
 }
 

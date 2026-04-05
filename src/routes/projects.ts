@@ -3,12 +3,15 @@ import { z } from 'zod'
 import {
   createMember,
   createProject,
+  createSystemRelation,
   createSystem,
   deleteMember,
+  deleteSystemRelation,
   deleteSystem,
   getProjectDetail,
   listMembers,
   listProjects,
+  listSystemRelations,
   listSystems,
   updateMember,
   updatePhase,
@@ -53,6 +56,12 @@ const createSystemSchema = z.object({
   name: z.string().trim().min(1).max(100),
   category: z.string().trim().min(1).max(100),
   ownerMemberId: z.string().min(1).nullable().optional(),
+  note: z.string().trim().max(500).nullable().optional(),
+})
+
+const createSystemRelationSchema = z.object({
+  sourceSystemId: z.string().trim().min(1),
+  targetSystemId: z.string().trim().min(1),
   note: z.string().trim().max(500).nullable().optional(),
 })
 
@@ -250,6 +259,12 @@ projectRoutes.get('/systems', async (c) =>
   }),
 )
 
+projectRoutes.get('/system-relations', async (c) =>
+  c.json({
+    items: await listSystemRelations(),
+  }),
+)
+
 projectRoutes.post('/systems', async (c) => {
   const body = await c.req.json()
   const parsed = createSystemSchema.safeParse(body)
@@ -271,6 +286,33 @@ projectRoutes.post('/systems', async (c) => {
     return c.json(
       {
         message: error instanceof Error ? error.message : 'Failed to create system',
+      },
+      400,
+    )
+  }
+})
+
+projectRoutes.post('/system-relations', async (c) => {
+  const body = await c.req.json()
+  const parsed = createSystemRelationSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsed.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await createSystemRelation(parsed.data)
+    return c.json(result, 201)
+  } catch (error) {
+    return c.json(
+      {
+        message: error instanceof Error ? error.message : 'Failed to create system relation',
       },
       400,
     )
@@ -326,6 +368,26 @@ projectRoutes.delete('/systems/:systemId', async (c) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete system'
     const status = message === 'System not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.delete('/system-relations/:relationId', async (c) => {
+  const paramsSchema = z.object({
+    relationId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'relationId is invalid' }, 400)
+  }
+
+  try {
+    const result = await deleteSystemRelation(parsedParams.data.relationId)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete system relation'
+    const status = message === 'System relation not found' ? 404 : 400
     return c.json({ message }, status)
   }
 })

@@ -62,6 +62,13 @@ export interface ManagedSystem {
   note?: string | null
 }
 
+export interface SystemRelation {
+  id: string
+  sourceSystemId: string
+  targetSystemId: string
+  note?: string | null
+}
+
 export interface CreateProjectInput {
   projectNumber: string
   name: string
@@ -145,6 +152,12 @@ export interface CreateSystemInput {
   name: string
   category: string
   ownerMemberId?: string | null
+  note?: string | null
+}
+
+export interface CreateSystemRelationInput {
+  sourceSystemId: string
+  targetSystemId: string
   note?: string | null
 }
 
