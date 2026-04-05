@@ -1,0 +1,44 @@
+[
+  {
+    "id": "sys-accounting",
+    "name": "会計基盤",
+    "category": "基幹",
+    "ownerMemberId": "m1",
+    "note": "会計仕訳と月次締め処理を担う基幹システム"
+  },
+  {
+    "id": "sys-logistics",
+    "name": "物流ダッシュボード",
+    "category": "物流",
+    "ownerMemberId": "m6",
+    "note": "配送状況と倉庫在庫の横断監視ダッシュボード"
+  },
+  {
+    "id": "sys-sales-bi",
+    "name": "営業管理BI",
+    "category": "分析",
+    "ownerMemberId": "m1",
+    "note": "営業実績と施策効果を可視化する分析基盤"
+  },
+  {
+    "id": "sys-portal",
+    "name": "社内ポータル",
+    "category": "社内基盤",
+    "ownerMemberId": "m6",
+    "note": "社内申請と情報共有の入口となるポータル"
+  },
+  {
+    "id": "sys-mobile-app",
+    "name": "販促モバイル",
+    "category": "チャネル",
+    "ownerMemberId": "m1",
+    "note": "店頭販促向けのモバイルアプリ"
+  },
+  {
+    "id": "sys-infra-common",
+    "name": "共通インフラ",
+    "category": "基盤",
+    "ownerMemberId": "m4",
+    "note": "複数案件が利用する共通基盤と運用環境"
+  }
+]

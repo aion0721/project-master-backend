@@ -12,6 +12,7 @@ export interface Project {
   endDate: string
   status: WorkStatus
   pmMemberId: string
+  relatedSystemIds?: string[]
   projectLinks: ProjectLink[]
 }
 
@@ -53,6 +54,14 @@ export interface ProjectAssignment {
   reportsToMemberId?: string | null
 }
 
+export interface ManagedSystem {
+  id: string
+  name: string
+  category: string
+  ownerMemberId?: string | null
+  note?: string | null
+}
+
 export interface CreateProjectInput {
   projectNumber: string
   name: string
@@ -60,6 +69,7 @@ export interface CreateProjectInput {
   endDate: string
   status: WorkStatus
   pmMemberId: string
+  relatedSystemIds?: string[]
   projectLinks: ProjectLink[]
 }
 
@@ -124,4 +134,19 @@ export interface ProjectStructureAssignmentInput {
 export interface UpdateProjectStructureInput {
   pmMemberId: string
   assignments: ProjectStructureAssignmentInput[]
+}
+
+export interface CreateSystemInput {
+  id: string
+  name: string
+  category: string
+  ownerMemberId?: string | null
+  note?: string | null
+}
+
+export interface UpdateSystemInput {
+  name: string
+  category: string
+  ownerMemberId?: string | null
+  note?: string | null
 }

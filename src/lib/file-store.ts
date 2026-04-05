@@ -7,8 +7,17 @@ import {
   seedMembers,
   seedPhases,
   seedProjects,
+  seedSystems,
 } from '../data/seedData.js'
-import type { Member, Phase, Project, ProjectAssignment, ProjectEvent, WorkStatus } from '../types/domain.js'
+import type {
+  ManagedSystem,
+  Member,
+  Phase,
+  Project,
+  ProjectAssignment,
+  ProjectEvent,
+  WorkStatus,
+} from '../types/domain.js'
 
 const allWorkStatuses: WorkStatus[] = ['未着手', '進行中', '遅延', '完了']
 
@@ -26,6 +35,7 @@ const projectSchema = z
     endDate: z.string().date(),
     status: workStatusSchema,
     pmMemberId: z.string().min(1),
+    relatedSystemIds: z.array(z.string().min(1)).optional().default([]),
     projectLinks: z.array(projectLinkSchema).optional(),
     projectLink: z.string().url().nullable().optional(),
   })
@@ -64,6 +74,14 @@ const memberSchema = z.object({
   defaultProjectStatusFilters: z.array(workStatusSchema).optional().default([...allWorkStatuses]),
 })
 
+const systemSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  category: z.string().min(1),
+  ownerMemberId: z.string().min(1).nullable().optional(),
+  note: z.string().nullable().optional(),
+})
+
 const assignmentSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
@@ -77,6 +95,7 @@ const storeSchema = {
   phases: z.array(phaseSchema),
   events: z.array(eventSchema),
   members: z.array(memberSchema),
+  systems: z.array(systemSchema),
   assignments: z.array(assignmentSchema),
 } as const
 
@@ -87,6 +106,7 @@ export interface StoreData {
   phases: Phase[]
   events: ProjectEvent[]
   members: Member[]
+  systems: ManagedSystem[]
   assignments: ProjectAssignment[]
 }
 
@@ -96,6 +116,7 @@ const filePaths: Record<StoreKey, string> = {
   phases: resolve(dataDirectory, 'phases.json'),
   events: resolve(dataDirectory, 'events.json'),
   members: resolve(dataDirectory, 'members.json'),
+  systems: resolve(dataDirectory, 'systems.json'),
   assignments: resolve(dataDirectory, 'assignments.json'),
 }
 
@@ -104,6 +125,7 @@ const defaultData: StoreData = {
   phases: seedPhases,
   events: seedEvents,
   members: seedMembers,
+  systems: seedSystems,
   assignments: seedAssignments,
 }
 
@@ -119,6 +141,7 @@ function cloneStore(store: StoreData): StoreData {
   return {
     projects: cloneEntries(store.projects).map((project) => ({
       ...project,
+      relatedSystemIds: [...(project.relatedSystemIds ?? [])],
       projectLinks: project.projectLinks.map((link) => ({ ...link })),
     })),
     phases: cloneEntries(store.phases),
@@ -128,6 +151,7 @@ function cloneStore(store: StoreData): StoreData {
       bookmarkedProjectIds: [...member.bookmarkedProjectIds],
       defaultProjectStatusFilters: [...(member.defaultProjectStatusFilters ?? allWorkStatuses)],
     })),
+    systems: cloneEntries(store.systems),
     assignments: cloneEntries(store.assignments),
   }
 }
@@ -166,11 +190,12 @@ async function loadFromDisk(): Promise<StoreData> {
   await mkdir(dataDirectory, { recursive: true })
   await Promise.all((Object.keys(filePaths) as StoreKey[]).map((key) => ensureFileExists(key)))
 
-  const [projects, phases, events, members, assignments] = await Promise.all([
+  const [projects, phases, events, members, systems, assignments] = await Promise.all([
     readAndValidateFile('projects'),
     readAndValidateFile('phases'),
     readAndValidateFile('events'),
     readAndValidateFile('members'),
+    readAndValidateFile('systems'),
     readAndValidateFile('assignments'),
   ])
 
@@ -179,6 +204,7 @@ async function loadFromDisk(): Promise<StoreData> {
     phases,
     events,
     members,
+    systems,
     assignments,
   }
 }

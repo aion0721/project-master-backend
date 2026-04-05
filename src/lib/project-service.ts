@@ -2,6 +2,8 @@ import { getStore, updateStore, type StoreData } from './file-store.js'
 import type {
   CreateMemberInput,
   CreateProjectInput,
+  CreateSystemInput,
+  ManagedSystem,
   Member,
   Phase,
   Project,
@@ -16,6 +18,7 @@ import type {
   UpdateProjectPhasesInput,
   UpdateProjectScheduleInput,
   UpdateProjectStructureInput,
+  UpdateSystemInput,
   WorkStatus,
 } from '../types/domain.js'
 
@@ -52,6 +55,10 @@ function normalizeProjectLinks(projectLinks: ProjectLink[]) {
 
 function getMemberById(memberId: string, members: Member[]) {
   return members.find((member) => member.id === memberId)
+}
+
+function getSystemById(systemId: string, systems: ManagedSystem[]) {
+  return systems.find((system) => system.id === systemId)
 }
 
 function getProjectPhases(projectId: string, phases: Phase[]) {
@@ -380,6 +387,91 @@ export async function deleteMember(memberId: string) {
   })
 }
 
+export async function listSystems() {
+  const store = await getStore()
+  return store.systems.map((system) => ({ ...system }))
+}
+
+export async function createSystem(input: CreateSystemInput) {
+  return updateStore(['systems'], (store) => {
+    const id = input.id.trim()
+    const name = input.name.trim()
+    const category = input.category.trim()
+    const ownerMemberId = input.ownerMemberId ?? null
+    const note = input.note?.trim() || null
+
+    if (!id || !name || !category) {
+      throw new Error('System fields are required')
+    }
+
+    if (store.systems.some((system) => system.id === id)) {
+      throw new Error('System id already exists')
+    }
+
+    if (ownerMemberId && !getMemberById(ownerMemberId, store.members)) {
+      throw new Error('System owner not found')
+    }
+
+    const system: ManagedSystem = {
+      id,
+      name,
+      category,
+      ownerMemberId,
+      note,
+    }
+
+    store.systems.push(system)
+    return { system }
+  })
+}
+
+export async function updateSystem(systemId: string, input: UpdateSystemInput) {
+  return updateStore(['systems'], (store) => {
+    const system = getSystemById(systemId, store.systems)
+
+    if (!system) {
+      throw new Error('System not found')
+    }
+
+    const name = input.name.trim()
+    const category = input.category.trim()
+    const ownerMemberId = input.ownerMemberId ?? null
+    const note = input.note?.trim() || null
+
+    if (!name || !category) {
+      throw new Error('System fields are required')
+    }
+
+    if (ownerMemberId && !getMemberById(ownerMemberId, store.members)) {
+      throw new Error('System owner not found')
+    }
+
+    system.name = name
+    system.category = category
+    system.ownerMemberId = ownerMemberId
+    system.note = note
+
+    return { system: { ...system } }
+  })
+}
+
+export async function deleteSystem(systemId: string) {
+  return updateStore(['systems'], (store) => {
+    const system = getSystemById(systemId, store.systems)
+
+    if (!system) {
+      throw new Error('System not found')
+    }
+
+    if (store.projects.some((project) => (project.relatedSystemIds ?? []).includes(systemId))) {
+      throw new Error('System is linked to a project')
+    }
+
+    store.systems = store.systems.filter((item) => item.id !== systemId)
+    return { systemId }
+  })
+}
+
 export async function listProjects() {
   const store = await getStore()
 
@@ -413,6 +505,12 @@ export async function createProject(input: CreateProjectInput) {
       throw new Error('Project number already exists')
     }
 
+    const relatedSystemIds = [...new Set(input.relatedSystemIds ?? [])]
+
+    if (relatedSystemIds.some((systemId) => !getSystemById(systemId, store.systems))) {
+      throw new Error('Related system does not exist')
+    }
+
     const projectId = input.projectNumber
     const project: Project = {
       projectNumber: projectId,
@@ -421,6 +519,7 @@ export async function createProject(input: CreateProjectInput) {
       endDate: input.endDate,
       status: input.status,
       pmMemberId: input.pmMemberId,
+      relatedSystemIds,
       projectLinks: normalizeProjectLinks(input.projectLinks),
     }
 

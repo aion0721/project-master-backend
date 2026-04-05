@@ -3,10 +3,13 @@ import { z } from 'zod'
 import {
   createMember,
   createProject,
+  createSystem,
   deleteMember,
+  deleteSystem,
   getProjectDetail,
   listMembers,
   listProjects,
+  listSystems,
   updateMember,
   updatePhase,
   updateProjectCurrentPhase,
@@ -15,6 +18,7 @@ import {
   updateProjectPhases,
   updateProjectSchedule,
   updateProjectStructure,
+  updateSystem,
 } from '../lib/project-service.js'
 
 const projectLinkSchema = z.object({
@@ -39,8 +43,24 @@ const createProjectSchema = z
     endDate: z.string().date(),
     status: z.enum(['not_started', 'in_progress', 'completed', 'delayed']),
     pmMemberId: z.string().min(1),
+    relatedSystemIds: z.array(z.string().trim().min(1)).optional().default([]),
     projectLinks: z.array(projectLinkSchema).optional().default([]),
   })
+
+const createSystemSchema = z.object({
+  id: z.string().trim().min(1).max(50),
+  name: z.string().trim().min(1).max(100),
+  category: z.string().trim().min(1).max(100),
+  ownerMemberId: z.string().min(1).nullable().optional(),
+  note: z.string().trim().max(500).nullable().optional(),
+})
+
+const updateSystemSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  category: z.string().trim().min(1).max(100),
+  ownerMemberId: z.string().min(1).nullable().optional(),
+  note: z.string().trim().max(500).nullable().optional(),
+})
 
 const createMemberSchema = z.object({
   id: z.string().trim().min(1).max(50),
@@ -215,6 +235,92 @@ projectRoutes.delete('/members/:memberId', async (c) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete member'
     const status = message === 'Member not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.get('/systems', async (c) =>
+  c.json({
+    items: await listSystems(),
+  }),
+)
+
+projectRoutes.post('/systems', async (c) => {
+  const body = await c.req.json()
+  const parsed = createSystemSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsed.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await createSystem(parsed.data)
+    return c.json(result, 201)
+  } catch (error) {
+    return c.json(
+      {
+        message: error instanceof Error ? error.message : 'Failed to create system',
+      },
+      400,
+    )
+  }
+})
+
+projectRoutes.patch('/systems/:systemId', async (c) => {
+  const paramsSchema = z.object({
+    systemId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'systemId is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateSystemSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await updateSystem(parsedParams.data.systemId, parsedBody.data)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update system'
+    const status = message === 'System not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.delete('/systems/:systemId', async (c) => {
+  const paramsSchema = z.object({
+    systemId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'systemId is invalid' }, 400)
+  }
+
+  try {
+    const result = await deleteSystem(parsedParams.data.systemId)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete system'
+    const status = message === 'System not found' ? 404 : 400
     return c.json({ message }, status)
   }
 })

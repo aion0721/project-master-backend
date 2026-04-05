@@ -1,16 +1,131 @@
-import type { Member, Phase, Project, ProjectAssignment, ProjectEvent } from '../types/domain.js'
+import type { ManagedSystem, Member, Phase, Project, ProjectAssignment, ProjectEvent } from '../types/domain.js'
 
 export const seedMembers: Member[] = [
-  { id: 'm1', name: '田中', role: 'PM', managerId: null, bookmarkedProjectIds: ['PRJ-001', 'PRJ-005'] },
-  { id: 'm2', name: '佐藤', role: '基本設計リーダー', managerId: 'm1', bookmarkedProjectIds: [] },
-  { id: 'm3', name: '鈴木', role: '詳細設計エンジニア', managerId: 'm2', bookmarkedProjectIds: [] },
-  { id: 'm4', name: '高橋', role: 'インフラリーダー', managerId: 'm1', bookmarkedProjectIds: [] },
-  { id: 'm5', name: '伊藤', role: 'QAエンジニア', managerId: 'm4', bookmarkedProjectIds: [] },
-  { id: 'm6', name: '中村', role: 'PMO', managerId: 'm1', bookmarkedProjectIds: [] },
-  { id: 'm7', name: '小林', role: 'OSスペシャリスト', managerId: 'm4', bookmarkedProjectIds: [] },
-  { id: 'm8', name: '山本', role: 'アーキテクト', managerId: 'm2', bookmarkedProjectIds: [] },
-  { id: 'm9', name: '加藤', role: 'バックエンドエンジニア', managerId: 'm2', bookmarkedProjectIds: [] },
-  { id: 'm10', name: '渡辺', role: 'テストリーダー', managerId: 'm4', bookmarkedProjectIds: [] },
+  {
+    id: 'm1',
+    name: '田中',
+    role: 'PM',
+    managerId: null,
+    bookmarkedProjectIds: ['PRJ-001', 'PRJ-005'],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+  {
+    id: 'm2',
+    name: '山本',
+    role: '基本設計リーダー',
+    managerId: 'm1',
+    bookmarkedProjectIds: [],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+  {
+    id: 'm3',
+    name: '鈴木',
+    role: '詳細設計エンジニア',
+    managerId: 'm2',
+    bookmarkedProjectIds: [],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+  {
+    id: 'm4',
+    name: '高橋',
+    role: 'インフラリーダー',
+    managerId: 'm1',
+    bookmarkedProjectIds: [],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+  {
+    id: 'm5',
+    name: '渡辺',
+    role: 'QAエンジニア',
+    managerId: 'm4',
+    bookmarkedProjectIds: [],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+  {
+    id: 'm6',
+    name: '中村',
+    role: 'PMO',
+    managerId: 'm1',
+    bookmarkedProjectIds: [],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+  {
+    id: 'm7',
+    name: '小林',
+    role: 'OSスペシャリスト',
+    managerId: 'm4',
+    bookmarkedProjectIds: [],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+  {
+    id: 'm8',
+    name: '木村',
+    role: 'アーキテクト',
+    managerId: 'm2',
+    bookmarkedProjectIds: [],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+  {
+    id: 'm9',
+    name: '加藤',
+    role: 'バックエンドエンジニア',
+    managerId: 'm2',
+    bookmarkedProjectIds: [],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+  {
+    id: 'm10',
+    name: '伊藤',
+    role: 'テストリーダー',
+    managerId: 'm4',
+    bookmarkedProjectIds: [],
+    defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
+  },
+]
+
+export const seedSystems: ManagedSystem[] = [
+  {
+    id: 'sys-accounting',
+    name: '会計基盤',
+    category: '基幹',
+    ownerMemberId: 'm1',
+    note: '会計仕訳と月次締め処理を担う基幹システム',
+  },
+  {
+    id: 'sys-logistics',
+    name: '物流ダッシュボード',
+    category: '物流',
+    ownerMemberId: 'm6',
+    note: '配送状況と倉庫在庫の横断監視ダッシュボード',
+  },
+  {
+    id: 'sys-sales-bi',
+    name: '営業管理BI',
+    category: '分析',
+    ownerMemberId: 'm1',
+    note: '営業実績と施策効果を可視化する分析基盤',
+  },
+  {
+    id: 'sys-portal',
+    name: '社内ポータル',
+    category: '社内基盤',
+    ownerMemberId: 'm6',
+    note: '社内申請と情報共有の入口となるポータル',
+  },
+  {
+    id: 'sys-mobile-app',
+    name: '販促モバイル',
+    category: 'チャネル',
+    ownerMemberId: 'm1',
+    note: '店頭販促向けのモバイルアプリ',
+  },
+  {
+    id: 'sys-infra-common',
+    name: '共通インフラ',
+    category: '基盤',
+    ownerMemberId: 'm4',
+    note: '複数案件が利用する共通基盤と運用環境',
+  },
 ]
 
 export const seedProjects: Project[] = [
@@ -21,9 +136,10 @@ export const seedProjects: Project[] = [
     endDate: '2026-06-26',
     status: '進行中',
     pmMemberId: 'm1',
+    relatedSystemIds: ['sys-accounting', 'sys-infra-common'],
     projectLinks: [
       { label: 'Backlog', url: 'https://example.com/projects/PRJ-001' },
-      { label: '設計資料', url: 'https://example.com/wiki/PRJ-001' },
+      { label: '設計共有', url: 'https://example.com/wiki/PRJ-001' },
     ],
   },
   {
@@ -33,6 +149,7 @@ export const seedProjects: Project[] = [
     endDate: '2026-07-10',
     status: '遅延',
     pmMemberId: 'm6',
+    relatedSystemIds: ['sys-logistics', 'sys-infra-common'],
     projectLinks: [{ label: '案件ページ', url: 'https://example.com/projects/PRJ-002' }],
   },
   {
@@ -42,6 +159,7 @@ export const seedProjects: Project[] = [
     endDate: '2026-05-29',
     status: '完了',
     pmMemberId: 'm1',
+    relatedSystemIds: ['sys-sales-bi'],
     projectLinks: [],
   },
   {
@@ -51,6 +169,7 @@ export const seedProjects: Project[] = [
     endDate: '2026-08-07',
     status: '未着手',
     pmMemberId: 'm6',
+    relatedSystemIds: ['sys-portal', 'sys-infra-common'],
     projectLinks: [],
   },
   {
@@ -60,6 +179,7 @@ export const seedProjects: Project[] = [
     endDate: '2026-07-17',
     status: '進行中',
     pmMemberId: 'm1',
+    relatedSystemIds: ['sys-mobile-app', 'sys-sales-bi'],
     projectLinks: [{ label: '案件ページ', url: 'https://example.com/projects/PRJ-005' }],
   },
 ]
@@ -156,10 +276,10 @@ export const seedEvents: ProjectEvent[] = [
   {
     id: 'ev-p5-1',
     projectId: 'PRJ-005',
-    name: '販売デモ',
+    name: '販促デモ',
     week: 7,
     status: '進行中',
     ownerMemberId: 'm1',
-    note: '営業向け暫定版',
+    note: '営業向け説明会',
   },
 ]
