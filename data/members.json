@@ -3,60 +3,70 @@
     "id": "m1",
     "name": "田中",
     "role": "PM",
-    "managerId": null
+    "managerId": null,
+    "bookmarkedProjectIds": ["PRJ-001", "PRJ-005"]
   },
   {
     "id": "m2",
     "name": "佐藤",
     "role": "基本設計リーダー",
-    "managerId": "m1"
+    "managerId": "m1",
+    "bookmarkedProjectIds": []
   },
   {
     "id": "m3",
-    "name": "山本",
+    "name": "鈴木",
     "role": "詳細設計エンジニア",
-    "managerId": "m2"
+    "managerId": "m2",
+    "bookmarkedProjectIds": []
   },
   {
     "id": "m4",
     "name": "高橋",
     "role": "インフラリーダー",
-    "managerId": "m1"
+    "managerId": "m1",
+    "bookmarkedProjectIds": []
   },
   {
     "id": "m5",
     "name": "伊藤",
     "role": "QAエンジニア",
-    "managerId": "m4"
+    "managerId": "m4",
+    "bookmarkedProjectIds": []
   },
   {
     "id": "m6",
     "name": "中村",
     "role": "PMO",
-    "managerId": "m1"
+    "managerId": "m1",
+    "bookmarkedProjectIds": []
   },
   {
     "id": "m7",
-    "name": "鈴木",
+    "name": "小林",
     "role": "OSスペシャリスト",
-    "managerId": "m4"
+    "managerId": "m4",
+    "bookmarkedProjectIds": []
   },
   {
     "id": "m8",
-    "name": "小林",
+    "name": "木村",
     "role": "アーキテクト",
-    "managerId": "m2"
+    "managerId": "m2",
+    "bookmarkedProjectIds": []
   },
   {
     "id": "m9",
     "name": "加藤",
     "role": "バックエンドエンジニア",
-    "managerId": "m2"
+    "managerId": "m2",
+    "bookmarkedProjectIds": []
   },
   {
     "id": "m10",
     "name": "渡辺",
     "role": "テストリーダー",
-    "managerId": "m4"
+    "managerId": "m4",
+    "bookmarkedProjectIds": []
   }
 ]

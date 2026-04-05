@@ -1,23 +1,16 @@
-import type {
-  Member,
-  Phase,
-  Project,
-  ProjectAssignment,
-  ProjectEvent,
-  UserProfile,
-} from '../types/domain.js'
+import type { Member, Phase, Project, ProjectAssignment, ProjectEvent } from '../types/domain.js'
 
 export const seedMembers: Member[] = [
-  { id: 'm1', name: '田中', role: 'PM', managerId: null },
-  { id: 'm2', name: '佐藤', role: '基本設計リーダー', managerId: 'm1' },
-  { id: 'm3', name: '山本', role: '詳細設計エンジニア', managerId: 'm2' },
-  { id: 'm4', name: '高橋', role: 'インフラリーダー', managerId: 'm1' },
-  { id: 'm5', name: '伊藤', role: 'QAエンジニア', managerId: 'm4' },
-  { id: 'm6', name: '中村', role: 'PMO', managerId: 'm1' },
-  { id: 'm7', name: '鈴木', role: 'OSスペシャリスト', managerId: 'm4' },
-  { id: 'm8', name: '木村', role: 'アーキテクト', managerId: 'm2' },
-  { id: 'm9', name: '松本', role: 'バックエンドエンジニア', managerId: 'm2' },
-  { id: 'm10', name: '小林', role: 'テストリーダー', managerId: 'm4' },
+  { id: 'm1', name: '田中', role: 'PM', managerId: null, bookmarkedProjectIds: ['PRJ-001', 'PRJ-005'] },
+  { id: 'm2', name: '佐藤', role: '基本設計リーダー', managerId: 'm1', bookmarkedProjectIds: [] },
+  { id: 'm3', name: '鈴木', role: '詳細設計エンジニア', managerId: 'm2', bookmarkedProjectIds: [] },
+  { id: 'm4', name: '高橋', role: 'インフラリーダー', managerId: 'm1', bookmarkedProjectIds: [] },
+  { id: 'm5', name: '伊藤', role: 'QAエンジニア', managerId: 'm4', bookmarkedProjectIds: [] },
+  { id: 'm6', name: '中村', role: 'PMO', managerId: 'm1', bookmarkedProjectIds: [] },
+  { id: 'm7', name: '小林', role: 'OSスペシャリスト', managerId: 'm4', bookmarkedProjectIds: [] },
+  { id: 'm8', name: '山本', role: 'アーキテクト', managerId: 'm2', bookmarkedProjectIds: [] },
+  { id: 'm9', name: '加藤', role: 'バックエンドエンジニア', managerId: 'm2', bookmarkedProjectIds: [] },
+  { id: 'm10', name: '渡辺', role: 'テストリーダー', managerId: 'm4', bookmarkedProjectIds: [] },
 ]
 
 export const seedProjects: Project[] = [
@@ -35,7 +28,7 @@ export const seedProjects: Project[] = [
   },
   {
     projectNumber: 'PRJ-002',
-    name: '営業統合ダッシュボード',
+    name: '物流統合ダッシュボード',
     startDate: '2026-04-20',
     endDate: '2026-07-10',
     status: '遅延',
@@ -44,7 +37,7 @@ export const seedProjects: Project[] = [
   },
   {
     projectNumber: 'PRJ-003',
-    name: '購買管理API改修',
+    name: '営業管理BI改善',
     startDate: '2026-03-30',
     endDate: '2026-05-29',
     status: '完了',
@@ -62,7 +55,7 @@ export const seedProjects: Project[] = [
   },
   {
     projectNumber: 'PRJ-005',
-    name: '経費精算モバイル連携',
+    name: '販売促進モバイル連携',
     startDate: '2026-04-27',
     endDate: '2026-07-17',
     status: '進行中',
@@ -140,7 +133,7 @@ export const seedEvents: ProjectEvent[] = [
     week: 4,
     status: '完了',
     ownerMemberId: 'm7',
-    note: '検証環境を利用開始',
+    note: '設計環境を利用開始',
   },
   {
     id: 'ev-p1-2',
@@ -163,18 +156,10 @@ export const seedEvents: ProjectEvent[] = [
   {
     id: 'ev-p5-1',
     projectId: 'PRJ-005',
-    name: '顧客デモ',
+    name: '販売デモ',
     week: 7,
     status: '進行中',
     ownerMemberId: 'm1',
-    note: '月例定例向け',
-  },
-]
-
-export const seedUsers: UserProfile[] = [
-  {
-    id: 'u1',
-    username: 'demo',
-    bookmarkedProjectIds: ['PRJ-001', 'PRJ-005'],
+    note: '営業向け暫定版',
   },
 ]

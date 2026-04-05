@@ -1,38 +1,41 @@
 # AGENTS.md
 
-このファイルは `H:\react\project-master-backend` の開発ガイドです。
+このファイルは `H:\react\project-master-backend` の作業ガイドです。
 
-## 役割
+## 概要
 
 - 案件管理 Web アプリ向けの Hono API
 - フロントエンド `H:\react\project-master` から利用される JSON API
-- 永続化は DB ではなく OS 上の分割 JSON ファイル
+- 永続化は DB ではなく `data/` 配下の JSON ファイル
 
 ## 開発コマンド
 
-- 依存関係インストール: `yarn`
-- 開発サーバ: `yarn dev`
+- 依存インストール: `yarn`
+- 開発サーバー: `yarn dev`
 - 型チェック: `yarn typecheck`
 - ビルド: `yarn build`
 - 本番起動: `yarn start`
 
-変更完了前に最低限 `yarn typecheck` と `yarn build` を通すこと。
+作業完了前は最低でも `yarn typecheck` と `yarn build` を通すこと。
 
-## 現在の永続化方針
+## 永続化の前提
 
-データは backend ルートの `data/` に機能ごとに分割して保存する。
+データは `data/` に保存する。
 
 - `data/projects.json`
 - `data/phases.json`
+- `data/events.json`
 - `data/members.json`
 - `data/assignments.json`
 
-実装の入口は [file-store.ts](H:/react/project-master-backend/src/lib/file-store.ts)。
+`members.json` は組織メンバー情報に加えて `bookmarkedProjectIds` を保持する。`users.json` は使わない。
 
-- 起動時にファイルを検証して読み込む
-- ファイルが無ければ seed データから生成する
+永続化の実装は [file-store.ts](H:/react/project-master-backend/src/lib/file-store.ts)。
+
+- 読み込み時にファイルを検証して正規化する
+- ファイルがなければ seed data から初期化する
 - 更新時は一時ファイルへ書いてから置き換える
-- 書き込みはアプリ内で直列化する
+- 書き込みはアプリ側で直列化する
 
 ## ディレクトリ構成
 
@@ -45,15 +48,18 @@ src/
   lib/
     file-store.ts
     project-service.ts
+    user-service.ts
   routes/
     health.ts
     projects.ts
     cross-project.ts
+    users.ts
   types/
     domain.ts
 data/
   projects.json
   phases.json
+  events.json
   members.json
   assignments.json
 ```
@@ -61,27 +67,27 @@ data/
 ## レイヤ責務
 
 - `routes/`
-  - HTTP 入出力、パラメータ検証、HTTP ステータス制御
+  - HTTP 入出力、パラメータ検証、HTTP ステータス変換
 - `lib/file-store.ts`
-  - JSON 永続化、起動時初期化、スキーマ検証、書き込み直列化
+  - JSON 永続化、起動時の読み込み、書き込み制御
 - `lib/project-service.ts`
-  - 案件一覧、案件詳細、横断ビュー、作成、更新の業務ロジック
+  - 案件一覧、案件詳細、構造更新、フェーズ更新などの業務ロジック
+- `lib/user-service.ts`
+  - 利用メンバー選択、ブックマーク更新
 - `data/seedData.ts`
-  - 初回起動時の初期データ
+  - 初期化用の seed データ
 - `types/`
   - ドメイン型
-
-ルートで配列を直接操作せず、永続化や業務処理は `lib/` に寄せること。
 
 ## 実装ルール
 
 - API は JSON を返す
 - 入力バリデーションは `zod`
-- フロントに返す shape を不用意に壊さない
+- フロントに返す shape を不用意に変えない
 - ID 採番や関連整合性は service 層で管理する
-- 永続化方式を変える場合も、まず `project-service.ts` の外側で吸収する
+- 永続化都合を増やす場合も、業務ロジックはまず `lib/` に寄せる
 
-## フロントとの契約
+## 主要レスポンス
 
 主に使われる画面は以下。
 
@@ -89,19 +95,17 @@ data/
 - 案件詳細
 - 複数案件横断ビュー
 
-そのため以下のレスポンス互換性が重要。
+そのため以下のレスポンス整形は互換性に注意する。
 
 - `currentPhase`
 - `pm`
 - `phases[].range`
-- `phases[].assignee`
 - `assignments[].member`
 - `weeklyPhases`
 
 ## 今後の拡張候補
 
-- 案件編集、削除 API
-- フェーズ担当者、状態、進捗の更新 API
-- 監査ログ
-- 認証
+- 案件編集 API
+- メンバー権限や認証
+- フェーズ週計算の集約
 - DB への移行

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getUserById, loginUser, toggleBookmark } from '../lib/user-service.js'
 
 const loginSchema = z.object({
-  username: z.string().trim().min(1).max(100),
+  memberKey: z.string().trim().min(1).max(100),
 })
 
 const bookmarkSchema = z.object({
@@ -12,7 +12,7 @@ const bookmarkSchema = z.object({
 
 export const userRoutes = new Hono()
 
-userRoutes.post('/users/login', async (c) => {
+userRoutes.post('/members/login', async (c) => {
   const body = await c.req.json()
   const parsed = loginSchema.safeParse(body)
 
@@ -27,19 +27,16 @@ userRoutes.post('/users/login', async (c) => {
   }
 
   try {
-    const user = await loginUser(parsed.data.username)
+    const user = await loginUser(parsed.data.memberKey)
     return c.json({ user })
   } catch (error) {
-    return c.json(
-      {
-        message: error instanceof Error ? error.message : 'Failed to login user',
-      },
-      400,
-    )
+    const message = error instanceof Error ? error.message : 'Failed to select member'
+    const status = message === 'Member not found' ? 404 : 400
+    return c.json({ message }, status)
   }
 })
 
-userRoutes.get('/users/:userId', async (c) => {
+userRoutes.get('/members/:userId', async (c) => {
   const paramsSchema = z.object({
     userId: z.string().min(1),
   })
@@ -52,13 +49,13 @@ userRoutes.get('/users/:userId', async (c) => {
   const user = await getUserById(parsed.data.userId)
 
   if (!user) {
-    return c.json({ message: 'User not found' }, 404)
+    return c.json({ message: 'Member not found' }, 404)
   }
 
   return c.json({ user })
 })
 
-userRoutes.patch('/users/:userId/bookmarks', async (c) => {
+userRoutes.patch('/members/:userId/bookmarks', async (c) => {
   const paramsSchema = z.object({
     userId: z.string().min(1),
   })
@@ -86,7 +83,7 @@ userRoutes.patch('/users/:userId/bookmarks', async (c) => {
     return c.json({ user })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update bookmark'
-    const status = message === 'User not found' || message === 'Project not found' ? 404 : 400
+    const status = message === 'Member not found' || message === 'Project not found' ? 404 : 400
     return c.json({ message }, status)
   }
 })

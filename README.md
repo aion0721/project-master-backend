@@ -9,30 +9,39 @@ yarn
 yarn dev
 ```
 
-デフォルトの起動ポートは `8787` です。
+デフォルトの待受ポートは `8787` です。
 
 ## 利用可能な API
 
 - `GET /`
 - `GET /health`
 - `GET /api/members`
+- `POST /api/members/login`
+- `GET /api/members/:memberId`
+- `PATCH /api/members/:memberId/bookmarks`
 - `GET /api/projects`
 - `POST /api/projects`
 - `GET /api/projects/:projectId`
+- `PATCH /api/projects/:projectId/current-phase`
+- `PATCH /api/projects/:projectId/schedule`
+- `PATCH /api/projects/:projectId/links`
+- `PATCH /api/projects/:projectId/phases`
+- `PATCH /api/projects/:projectId/events`
+- `PATCH /api/projects/:projectId/structure`
 - `PATCH /api/phases/:phaseId`
 - `GET /api/cross-project-weeks`
 
-## 永続化
+## データ保存
 
-SQLite などの DB は使わず、backend ルート配下の `data/` ディレクトリに JSON を分割保存します。
+SQLite などの DB は使わず、`data/` 配下の JSON を直接読み書きします。
 
 - `data/projects.json`
 - `data/phases.json`
+- `data/events.json`
 - `data/members.json`
 - `data/assignments.json`
 
-起動時に各ファイルを読み込み、存在しない場合は seed データから自動生成します。
-更新時は対象ファイルを `*.tmp` に書いてから置き換えるため、単純な上書きより安全です。
+`members.json` はメンバー情報に加えて `bookmarkedProjectIds` も保持します。`users.json` は廃止済みです。
 
 ## ビルド
 

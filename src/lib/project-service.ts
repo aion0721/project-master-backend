@@ -304,6 +304,7 @@ export async function createMember(input: CreateMemberInput) {
       name,
       role,
       managerId: input.managerId,
+      bookmarkedProjectIds: [],
     }
 
     store.members.push(member)

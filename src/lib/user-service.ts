@@ -1,66 +1,49 @@
 import { getStore, updateStore } from './file-store.js'
-import type { UserProfile } from '../types/domain.js'
 
-function normalizeUsername(username: string) {
-  return username.trim()
+function normalizeMemberKey(memberKey: string) {
+  return memberKey.trim()
 }
 
-function getNextUserId(users: UserProfile[]) {
-  const nextId =
-    users
-      .map((user) => Number(user.id.replace(/^u/, '')))
-      .filter((value) => Number.isFinite(value))
-      .reduce((max, value) => Math.max(max, value), 0) + 1
-
-  return `u${nextId}`
-}
-
-function cloneUser(user: UserProfile) {
+function cloneMember<T extends { bookmarkedProjectIds: string[] }>(member: T) {
   return {
-    ...user,
-    bookmarkedProjectIds: [...user.bookmarkedProjectIds],
+    ...member,
+    bookmarkedProjectIds: [...member.bookmarkedProjectIds],
   }
 }
 
-export async function getUserById(userId: string) {
+export async function getUserById(memberId: string) {
   const store = await getStore()
-  const user = store.users.find((item) => item.id === userId)
-  return user ? cloneUser(user) : null
+  const member = store.members.find((item) => item.id === memberId)
+  return member ? cloneMember(member) : null
 }
 
-export async function loginUser(username: string) {
-  const normalizedUsername = normalizeUsername(username)
+export async function loginUser(memberKey: string) {
+  const normalizedMemberKey = normalizeMemberKey(memberKey)
 
-  if (!normalizedUsername) {
-    throw new Error('username is required')
+  if (!normalizedMemberKey) {
+    throw new Error('memberKey is required')
   }
 
-  return updateStore(['users'], (store) => {
-    const existingUser = store.users.find(
-      (item) => item.username.toLocaleLowerCase() === normalizedUsername.toLocaleLowerCase(),
-    )
+  const store = await getStore()
+  const member = store.members.find(
+    (item) =>
+      item.id.toLocaleLowerCase() === normalizedMemberKey.toLocaleLowerCase() ||
+      item.name.toLocaleLowerCase() === normalizedMemberKey.toLocaleLowerCase(),
+  )
 
-    if (existingUser) {
-      return cloneUser(existingUser)
-    }
+  if (!member) {
+    throw new Error('Member not found')
+  }
 
-    const nextUser: UserProfile = {
-      id: getNextUserId(store.users),
-      username: normalizedUsername,
-      bookmarkedProjectIds: [],
-    }
-
-    store.users.push(nextUser)
-    return cloneUser(nextUser)
-  })
+  return cloneMember(member)
 }
 
-export async function toggleBookmark(userId: string, projectId: string) {
-  return updateStore(['users'], (store) => {
-    const user = store.users.find((item) => item.id === userId)
+export async function toggleBookmark(memberId: string, projectId: string) {
+  return updateStore(['members'], (store) => {
+    const member = store.members.find((item) => item.id === memberId)
 
-    if (!user) {
-      throw new Error('User not found')
+    if (!member) {
+      throw new Error('Member not found')
     }
 
     const projectExists = store.projects.some((project) => project.projectNumber === projectId)
@@ -69,12 +52,12 @@ export async function toggleBookmark(userId: string, projectId: string) {
       throw new Error('Project not found')
     }
 
-    const alreadyBookmarked = user.bookmarkedProjectIds.includes(projectId)
+    const alreadyBookmarked = member.bookmarkedProjectIds.includes(projectId)
 
-    user.bookmarkedProjectIds = alreadyBookmarked
-      ? user.bookmarkedProjectIds.filter((id) => id !== projectId)
-      : [...user.bookmarkedProjectIds, projectId]
+    member.bookmarkedProjectIds = alreadyBookmarked
+      ? member.bookmarkedProjectIds.filter((id) => id !== projectId)
+      : [...member.bookmarkedProjectIds, projectId]
 
-    return cloneUser(user)
+    return cloneMember(member)
   })
 }

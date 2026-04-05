@@ -7,7 +7,6 @@ import {
   seedMembers,
   seedPhases,
   seedProjects,
-  seedUsers,
 } from '../data/seedData.js'
 import type {
   Member,
@@ -15,7 +14,6 @@ import type {
   Project,
   ProjectAssignment,
   ProjectEvent,
-  UserProfile,
 } from '../types/domain.js'
 
 const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
@@ -66,6 +64,7 @@ const memberSchema = z.object({
   name: z.string().min(1),
   role: z.string().min(1),
   managerId: z.string().min(1).nullable(),
+  bookmarkedProjectIds: z.array(z.string().min(1)).optional().default([]),
 })
 
 const assignmentSchema = z.object({
@@ -76,19 +75,12 @@ const assignmentSchema = z.object({
   reportsToMemberId: z.string().min(1).nullable().optional(),
 })
 
-const userSchema = z.object({
-  id: z.string().min(1),
-  username: z.string().min(1),
-  bookmarkedProjectIds: z.array(z.string().min(1)),
-})
-
 const storeSchema = {
   projects: z.array(projectSchema),
   phases: z.array(phaseSchema),
   events: z.array(eventSchema),
   members: z.array(memberSchema),
   assignments: z.array(assignmentSchema),
-  users: z.array(userSchema),
 } as const
 
 type StoreKey = keyof typeof storeSchema
@@ -99,7 +91,6 @@ export interface StoreData {
   events: ProjectEvent[]
   members: Member[]
   assignments: ProjectAssignment[]
-  users: UserProfile[]
 }
 
 const dataDirectory = resolve(process.cwd(), 'data')
@@ -109,7 +100,6 @@ const filePaths: Record<StoreKey, string> = {
   events: resolve(dataDirectory, 'events.json'),
   members: resolve(dataDirectory, 'members.json'),
   assignments: resolve(dataDirectory, 'assignments.json'),
-  users: resolve(dataDirectory, 'users.json'),
 }
 
 const defaultData: StoreData = {
@@ -118,7 +108,6 @@ const defaultData: StoreData = {
   events: seedEvents,
   members: seedMembers,
   assignments: seedAssignments,
-  users: seedUsers,
 }
 
 let cache: StoreData | null = null
@@ -137,12 +126,11 @@ function cloneStore(store: StoreData): StoreData {
     })),
     phases: cloneEntries(store.phases),
     events: cloneEntries(store.events),
-    members: cloneEntries(store.members),
-    assignments: cloneEntries(store.assignments),
-    users: cloneEntries(store.users).map((user) => ({
-      ...user,
-      bookmarkedProjectIds: [...user.bookmarkedProjectIds],
+    members: cloneEntries(store.members).map((member) => ({
+      ...member,
+      bookmarkedProjectIds: [...member.bookmarkedProjectIds],
     })),
+    assignments: cloneEntries(store.assignments),
   }
 }
 
@@ -180,13 +168,12 @@ async function loadFromDisk(): Promise<StoreData> {
   await mkdir(dataDirectory, { recursive: true })
   await Promise.all((Object.keys(filePaths) as StoreKey[]).map((key) => ensureFileExists(key)))
 
-  const [projects, phases, events, members, assignments, users] = await Promise.all([
+  const [projects, phases, events, members, assignments] = await Promise.all([
     readAndValidateFile('projects'),
     readAndValidateFile('phases'),
     readAndValidateFile('events'),
     readAndValidateFile('members'),
     readAndValidateFile('assignments'),
-    readAndValidateFile('users'),
   ])
 
   return {
@@ -195,7 +182,6 @@ async function loadFromDisk(): Promise<StoreData> {
     events,
     members,
     assignments,
-    users,
   }
 }
 
