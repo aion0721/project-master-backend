@@ -15,6 +15,7 @@ import type {
   SystemRelation,
   UpdateMemberInput,
   UpdateProjectEventsInput,
+  UpdateProjectNoteInput,
   UpdatePhaseInput,
   UpdateProjectLinksInput,
   UpdateProjectSystemsInput,
@@ -606,6 +607,7 @@ export async function createProject(input: CreateProjectInput) {
       endDate: input.endDate,
       status: input.status,
       pmMemberId: input.pmMemberId,
+      note: input.note?.trim() || null,
       relatedSystemIds,
       projectLinks: normalizeProjectLinks(input.projectLinks),
     }
@@ -755,6 +757,20 @@ export async function updateProjectSystems(projectId: string, input: UpdateProje
     }
 
     project.relatedSystemIds = relatedSystemIds
+
+    return buildProjectDetailFromStore(projectId, store)
+  })
+}
+
+export async function updateProjectNote(projectId: string, input: UpdateProjectNoteInput) {
+  return updateStore(['projects'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    project.note = input.note?.trim() || null
 
     return buildProjectDetailFromStore(projectId, store)
   })

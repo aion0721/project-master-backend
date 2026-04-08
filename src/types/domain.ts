@@ -12,6 +12,7 @@ export interface Project {
   endDate: string
   status: WorkStatus
   pmMemberId: string
+  note?: string | null
   relatedSystemIds?: string[]
   projectLinks: ProjectLink[]
 }
@@ -78,6 +79,7 @@ export interface CreateProjectInput {
   endDate: string
   status: WorkStatus
   pmMemberId: string
+  note?: string | null
   relatedSystemIds?: string[]
   projectLinks: ProjectLink[]
 }
@@ -110,6 +112,10 @@ export interface UpdateProjectLinksInput {
 
 export interface UpdateProjectSystemsInput {
   relatedSystemIds: string[]
+}
+
+export interface UpdateProjectNoteInput {
+  note?: string | null
 }
 
 export interface UpdateProjectPhasesInput {

@@ -37,6 +37,7 @@ const projectSchema = z
     endDate: z.string().date(),
     status: workStatusSchema,
     pmMemberId: z.string().min(1),
+    note: z.string().nullable().optional(),
     relatedSystemIds: z.array(z.string().min(1)).optional().default([]),
     projectLinks: z.array(projectLinkSchema).optional(),
     projectLink: z.string().url().nullable().optional(),

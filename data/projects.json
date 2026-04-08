@@ -18,7 +18,8 @@
         "label": "設計共有",
         "url": "https://example.com/wiki/PRJ-001"
       }
-    ]
+    ],
+    "note": "Sample\nあああ"
   },
   {
     "projectNumber": "PRJ-002",

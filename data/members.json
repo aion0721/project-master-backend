@@ -6,8 +6,16 @@
     "departmentName": "事業推進部",
     "role": "PM",
     "managerId": null,
-    "bookmarkedProjectIds": ["PRJ-001", "PRJ-005"],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "bookmarkedProjectIds": [
+      "PRJ-001",
+      "PRJ-005"
+    ],
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   },
   {
     "id": "m2",
@@ -17,7 +25,12 @@
     "role": "基本設計リーダー",
     "managerId": "m1",
     "bookmarkedProjectIds": [],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   },
   {
     "id": "m3",
@@ -27,7 +40,12 @@
     "role": "詳細設計エンジニア",
     "managerId": "m2",
     "bookmarkedProjectIds": [],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   },
   {
     "id": "m4",
@@ -37,7 +55,12 @@
     "role": "インフラリーダー",
     "managerId": "m1",
     "bookmarkedProjectIds": [],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   },
   {
     "id": "m5",
@@ -47,7 +70,12 @@
     "role": "QAエンジニア",
     "managerId": "m4",
     "bookmarkedProjectIds": [],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   },
   {
     "id": "m6",
@@ -57,7 +85,12 @@
     "role": "PMO",
     "managerId": "m1",
     "bookmarkedProjectIds": [],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   },
   {
     "id": "m7",
@@ -67,7 +100,12 @@
     "role": "OSスペシャリスト",
     "managerId": "m4",
     "bookmarkedProjectIds": [],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   },
   {
     "id": "m8",
@@ -77,7 +115,12 @@
     "role": "アーキテクト",
     "managerId": "m2",
     "bookmarkedProjectIds": [],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   },
   {
     "id": "m9",
@@ -87,7 +130,12 @@
     "role": "バックエンドエンジニア",
     "managerId": "m2",
     "bookmarkedProjectIds": [],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   },
   {
     "id": "m10",
@@ -97,6 +145,11 @@
     "role": "テストリーダー",
     "managerId": "m4",
     "bookmarkedProjectIds": [],
-    "defaultProjectStatusFilters": ["未着手", "進行中", "遅延", "完了"]
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   }
 ]

@@ -37,9 +37,7 @@ export async function loginUser(memberKey: string) {
 
   const store = await getStore()
   const member = store.members.find(
-    (item) =>
-      item.id.toLocaleLowerCase() === normalizedMemberKey.toLocaleLowerCase() ||
-      item.name.toLocaleLowerCase() === normalizedMemberKey.toLocaleLowerCase(),
+    (item) => item.id.toLocaleLowerCase() === normalizedMemberKey.toLocaleLowerCase(),
   )
 
   if (!member) {
