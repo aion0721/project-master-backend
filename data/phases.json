@@ -254,7 +254,7 @@
     "projectId": "PRJ-001",
     "name": "基礎検討",
     "startWeek": 1,
-    "endWeek": 2,
+    "endWeek": 1,
     "status": "完了",
     "progress": 100,
     "assigneeMemberId": "m1"
