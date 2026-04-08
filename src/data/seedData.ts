@@ -186,7 +186,8 @@ export const seedProjects: Project[] = [
     status: '進行中',
     pmMemberId: 'm1',
     note: '基本設計はレビュー待ち。会計基盤とのIF確定を今週中に詰める。',
-    relatedSystemIds: ['sys-accounting', 'sys-infra-common'],
+    hasReportItems: true,
+    relatedSystemIds: ['sys-accounting'],
     projectLinks: [
       { label: 'Backlog', url: 'https://example.com/projects/PRJ-001' },
       { label: '設計共有', url: 'https://example.com/wiki/PRJ-001' },
@@ -200,7 +201,8 @@ export const seedProjects: Project[] = [
     status: '遅延',
     pmMemberId: 'm6',
     note: '物流側データの受領待ちで詳細設計が後ろ倒し。',
-    relatedSystemIds: ['sys-logistics', 'sys-infra-common'],
+    hasReportItems: true,
+    relatedSystemIds: ['sys-logistics'],
     projectLinks: [{ label: '案件ページ', url: 'https://example.com/projects/PRJ-002' }],
   },
   {
@@ -211,6 +213,7 @@ export const seedProjects: Project[] = [
     status: '完了',
     pmMemberId: 'm1',
     note: '本番反映まで完了。運用引き継ぎのみ残件。',
+    hasReportItems: false,
     relatedSystemIds: ['sys-sales-bi'],
     projectLinks: [],
   },
@@ -222,7 +225,8 @@ export const seedProjects: Project[] = [
     status: '未着手',
     pmMemberId: 'm6',
     note: null,
-    relatedSystemIds: ['sys-portal', 'sys-infra-common'],
+    hasReportItems: false,
+    relatedSystemIds: ['sys-portal'],
     projectLinks: [],
   },
   {
@@ -233,7 +237,8 @@ export const seedProjects: Project[] = [
     status: '進行中',
     pmMemberId: 'm1',
     note: 'デモ準備中。販促部門レビューを来週予定。',
-    relatedSystemIds: ['sys-mobile-app', 'sys-sales-bi'],
+    hasReportItems: true,
+    relatedSystemIds: ['sys-mobile-app'],
     projectLinks: [{ label: '案件ページ', url: 'https://example.com/projects/PRJ-005' }],
   },
 ]

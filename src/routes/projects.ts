@@ -19,6 +19,7 @@ import {
   updateProjectEvents,
   updateProjectLinks,
   updateProjectNote,
+  updateProjectReportStatus,
   updateProjectSystems,
   updateProjectPhases,
   updateProjectSchedule,
@@ -49,6 +50,7 @@ const createProjectSchema = z
     status: z.enum(['not_started', 'in_progress', 'completed', 'delayed']),
     pmMemberId: z.string().min(1),
     note: z.string().trim().max(2000).nullable().optional(),
+    hasReportItems: z.boolean().optional().default(false),
     relatedSystemIds: z.array(z.string().trim().min(1)).optional().default([]),
     projectLinks: z.array(projectLinkSchema).optional().default([]),
   })
@@ -128,6 +130,10 @@ const updateProjectSystemsSchema = z.object({
 
 const updateProjectNoteSchema = z.object({
   note: z.string().trim().max(2000).nullable().optional(),
+})
+
+const updateProjectReportStatusSchema = z.object({
+  hasReportItems: z.boolean(),
 })
 
 const updateProjectPhasesSchema = z.object({
@@ -649,6 +655,31 @@ projectRoutes.patch('/projects/:projectNumber/note', async (c) => {
     return c.json(detail)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update project note'
+    const status = message === 'Project not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.patch('/projects/:projectNumber/report-status', async (c) => {
+  const projectNumber = c.req.param('projectNumber')
+  const body = await c.req.json()
+  const parsed = updateProjectReportStatusSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsed.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const detail = await updateProjectReportStatus(projectNumber, parsed.data)
+    return c.json(detail)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update project report status'
     const status = message === 'Project not found' ? 404 : 400
     return c.json({ message }, status)
   }

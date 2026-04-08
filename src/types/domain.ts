@@ -13,6 +13,7 @@ export interface Project {
   status: WorkStatus
   pmMemberId: string
   note?: string | null
+  hasReportItems?: boolean
   relatedSystemIds?: string[]
   projectLinks: ProjectLink[]
 }
@@ -80,6 +81,7 @@ export interface CreateProjectInput {
   status: WorkStatus
   pmMemberId: string
   note?: string | null
+  hasReportItems?: boolean
   relatedSystemIds?: string[]
   projectLinks: ProjectLink[]
 }
@@ -116,6 +118,10 @@ export interface UpdateProjectSystemsInput {
 
 export interface UpdateProjectNoteInput {
   note?: string | null
+}
+
+export interface UpdateProjectReportStatusInput {
+  hasReportItems: boolean
 }
 
 export interface UpdateProjectPhasesInput {
