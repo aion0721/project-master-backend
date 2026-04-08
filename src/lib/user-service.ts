@@ -1,7 +1,13 @@
 import type { Member } from '../types/domain.js'
 import { getStore, updateStore } from './file-store.js'
 
-const allWorkStatuses: NonNullable<Member['defaultProjectStatusFilters']> = ['未着手', '進行中', '遅延', '完了']
+const allWorkStatuses: NonNullable<Member['defaultProjectStatusFilters']> = [
+  '未着手',
+  '進行中',
+  '遅延',
+  '完了',
+  '中止',
+]
 
 function normalizeMemberKey(memberKey: string) {
   return memberKey.trim()

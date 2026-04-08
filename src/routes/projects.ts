@@ -21,6 +21,7 @@ import {
   updateProjectLinks,
   updateProjectNote,
   updateProjectReportStatus,
+  updateProjectStatusOverride,
   updateProjectSystems,
   updateProjectPhases,
   updateProjectSchedule,
@@ -35,6 +36,18 @@ const projectLinkSchema = z.object({
 })
 
 const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
+const standardPhaseNameSchema = z.enum([
+  '予備検討',
+  '基礎検討',
+  '基本設計',
+  '詳細設計',
+  'CT',
+  'ITa',
+  'ITb',
+  'UAT',
+  '移行',
+])
+const projectStatusOverrideSchema = z.enum(['未着手', '進行中', '完了', '遅延', '中止'])
 
 const workStatusLabelMap = {
   not_started: '未着手',
@@ -53,6 +66,7 @@ const createProjectSchema = z
     pmMemberId: z.string().min(1),
     note: z.string().trim().max(2000).nullable().optional(),
     hasReportItems: z.boolean().optional().default(false),
+    initialPhaseNames: z.array(standardPhaseNameSchema).optional().default([]),
     relatedSystemIds: z.array(z.string().trim().min(1)).optional().default([]),
     projectLinks: z.array(projectLinkSchema).optional().default([]),
   })
@@ -151,6 +165,10 @@ const updateProjectNoteSchema = z.object({
 
 const updateProjectReportStatusSchema = z.object({
   hasReportItems: z.boolean(),
+})
+
+const updateProjectStatusOverrideSchema = z.object({
+  statusOverride: projectStatusOverrideSchema.nullable().optional(),
 })
 
 const updateProjectPhasesSchema = z.object({
@@ -736,6 +754,31 @@ projectRoutes.patch('/projects/:projectNumber/report-status', async (c) => {
     return c.json(detail)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update project report status'
+    const status = message === 'Project not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.patch('/projects/:projectNumber/status-override', async (c) => {
+  const projectNumber = c.req.param('projectNumber')
+  const body = await c.req.json()
+  const parsed = updateProjectStatusOverrideSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsed.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const detail = await updateProjectStatusOverride(projectNumber, parsed.data)
+    return c.json(detail)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update project status override'
     const status = message === 'Project not found' ? 404 : 400
     return c.json({ message }, status)
   }

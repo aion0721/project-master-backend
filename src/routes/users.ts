@@ -7,7 +7,7 @@ import {
   updateDefaultProjectStatusFilters,
 } from '../lib/user-service.js'
 
-const workStatusSchema = z.enum(['未着手', '進行中', '遅延', '完了'])
+const workStatusSchema = z.enum(['未着手', '進行中', '遅延', '完了', '中止'])
 
 const loginSchema = z.object({
   memberKey: z.string().trim().min(1).max(100),

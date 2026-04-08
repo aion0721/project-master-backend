@@ -18,14 +18,16 @@ import type {
   Project,
   ProjectAssignment,
   ProjectEvent,
+  ProjectStatus,
   SystemAssignment,
   SystemRelation,
   WorkStatus,
 } from '../types/domain.js'
 
-const allWorkStatuses: WorkStatus[] = ['未着手', '進行中', '遅延', '完了']
+const allWorkStatuses: ProjectStatus[] = ['未着手', '進行中', '遅延', '完了', '中止']
 
-const workStatusSchema = z.enum(allWorkStatuses)
+const projectStatusSchema = z.enum(allWorkStatuses)
+const workStatusSchema = z.enum(['未着手', '進行中', '遅延', '完了'])
 const projectLinkSchema = z.object({
   label: z.string().min(1),
   url: z.string().url(),
@@ -37,7 +39,8 @@ const projectSchema = z
     name: z.string().min(1),
     startDate: z.string().date(),
     endDate: z.string().date(),
-    status: workStatusSchema,
+    status: projectStatusSchema,
+    statusOverride: projectStatusSchema.nullable().optional(),
     pmMemberId: z.string().min(1),
   note: z.string().nullable().optional(),
   hasReportItems: z.boolean().optional().default(false),
@@ -79,7 +82,7 @@ const memberSchema = z.object({
   role: z.string().min(1),
   managerId: z.string().min(1).nullable(),
   bookmarkedProjectIds: z.array(z.string().min(1)).optional().default([]),
-  defaultProjectStatusFilters: z.array(workStatusSchema).optional().default([...allWorkStatuses]),
+  defaultProjectStatusFilters: z.array(projectStatusSchema).optional().default([...allWorkStatuses]),
 })
 
 const systemSchema = z.object({

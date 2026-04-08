@@ -151,5 +151,20 @@
       "遅延",
       "完了"
     ]
+  },
+  {
+    "id": "bb",
+    "name": "bb",
+    "departmentCode": "sampe",
+    "departmentName": "bbb",
+    "role": "部長",
+    "managerId": null,
+    "bookmarkedProjectIds": [],
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
   }
 ]

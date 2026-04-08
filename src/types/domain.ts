@@ -1,4 +1,6 @@
 export type WorkStatus = '未着手' | '進行中' | '完了' | '遅延'
+export type ProjectStatus = WorkStatus | '中止'
+export type ProjectStatusOverride = ProjectStatus
 
 export interface ProjectLink {
   label: string
@@ -10,7 +12,8 @@ export interface Project {
   name: string
   startDate: string
   endDate: string
-  status: WorkStatus
+  status: ProjectStatus
+  statusOverride?: ProjectStatusOverride | null
   pmMemberId: string
   note?: string | null
   hasReportItems?: boolean
@@ -47,7 +50,7 @@ export interface Member {
   role: string
   managerId: string | null
   bookmarkedProjectIds: string[]
-  defaultProjectStatusFilters?: WorkStatus[]
+  defaultProjectStatusFilters?: ProjectStatus[]
 }
 
 export interface ProjectAssignment {
@@ -92,6 +95,7 @@ export interface CreateProjectInput {
   pmMemberId: string
   note?: string | null
   hasReportItems?: boolean
+  initialPhaseNames?: string[]
   relatedSystemIds?: string[]
   projectLinks: ProjectLink[]
 }
@@ -132,6 +136,10 @@ export interface UpdateProjectNoteInput {
 
 export interface UpdateProjectReportStatusInput {
   hasReportItems: boolean
+}
+
+export interface UpdateProjectStatusOverrideInput {
+  statusOverride?: ProjectStatusOverride | null
 }
 
 export interface UpdateProjectPhasesInput {

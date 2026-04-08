@@ -19,6 +19,7 @@ import type {
   UpdateProjectEventsInput,
   UpdateProjectNoteInput,
   UpdateProjectReportStatusInput,
+  UpdateProjectStatusOverrideInput,
   UpdatePhaseInput,
   UpdateProjectLinksInput,
   UpdateProjectSystemsInput,
@@ -27,16 +28,53 @@ import type {
   UpdateProjectStructureInput,
   UpdateSystemStructureInput,
   UpdateSystemInput,
+  ProjectStatus,
   WorkStatus,
 } from '../types/domain.js'
 
-const phaseTemplates = [
-  { name: '基礎検討', startWeek: 1, endWeek: 2 },
-  { name: '基本設計', startWeek: 3, endWeek: 5 },
-  { name: '詳細設計', startWeek: 6, endWeek: 8 },
-  { name: 'テスト', startWeek: 9, endWeek: 11 },
-  { name: '移行', startWeek: 12, endWeek: 13 },
+const standardPhaseTemplates = [
+  { name: '予備検討', durationWeeks: 1 },
+  { name: '基礎検討', durationWeeks: 2 },
+  { name: '基本設計', durationWeeks: 2 },
+  { name: '詳細設計', durationWeeks: 2 },
+  { name: 'CT', durationWeeks: 1 },
+  { name: 'ITa', durationWeeks: 1 },
+  { name: 'ITb', durationWeeks: 1 },
+  { name: 'UAT', durationWeeks: 1 },
+  { name: '移行', durationWeeks: 1 },
 ] as const
+
+function buildInitialPhases(
+  projectId: string,
+  assigneeMemberId: string,
+  selectedPhaseNames: string[] | undefined,
+) {
+  const selectedSet = new Set(
+    (selectedPhaseNames?.length ? selectedPhaseNames : standardPhaseTemplates.map((phase) => phase.name))
+      .filter((phaseName) => standardPhaseTemplates.some((phase) => phase.name === phaseName)),
+  )
+
+  let currentWeek = 1
+
+  return standardPhaseTemplates
+    .filter((phase) => selectedSet.has(phase.name))
+    .map((phase, index) => {
+      const startWeek = currentWeek
+      const endWeek = currentWeek + phase.durationWeeks - 1
+      currentWeek = endWeek + 1
+
+      return {
+        id: `ph-${projectId}-${index + 1}`,
+        projectId,
+        name: phase.name,
+        startWeek,
+        endWeek,
+        status: '未着手' as const,
+        progress: 0,
+        assigneeMemberId,
+      }
+    })
+}
 
 function parseDate(value: string) {
   return new Date(`${value}T00:00:00`)
@@ -335,7 +373,8 @@ function syncProjectStatus(projectId: string, store: StoreData) {
     throw new Error('Project not found')
   }
 
-  project.status = deriveProjectStatus(getProjectPhases(project.projectNumber, store.phases))
+  project.status =
+    project.statusOverride ?? deriveProjectStatus(getProjectPhases(project.projectNumber, store.phases))
   return project
 }
 
@@ -796,17 +835,8 @@ export async function createProject(input: CreateProjectInput) {
       reportsToMemberId: null,
     })
 
-    phaseTemplates.forEach((template, index) => {
-      store.phases.push({
-        id: `ph-${projectId}-${index + 1}`,
-        projectId,
-        name: template.name,
-        startWeek: template.startWeek,
-        endWeek: template.endWeek,
-        status: '未着手',
-        progress: 0,
-        assigneeMemberId: input.pmMemberId,
-      })
+    buildInitialPhases(projectId, input.pmMemberId, input.initialPhaseNames).forEach((phase) => {
+      store.phases.push(phase)
     })
 
     return buildProjectDetailFromStore(projectId, store)
@@ -960,6 +990,25 @@ export async function updateProjectReportStatus(projectId: string, input: Update
     }
 
     project.hasReportItems = input.hasReportItems
+
+    return buildProjectDetailFromStore(projectId, store)
+  })
+}
+
+export async function updateProjectStatusOverride(
+  projectId: string,
+  input: UpdateProjectStatusOverrideInput,
+) {
+  return updateStore(['projects'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    const statusOverride = input.statusOverride ?? null
+    project.statusOverride = statusOverride
+    project.status = statusOverride ?? deriveProjectStatus(getProjectPhases(projectId, store.phases))
 
     return buildProjectDetailFromStore(projectId, store)
   })

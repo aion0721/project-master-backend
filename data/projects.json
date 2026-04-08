@@ -20,7 +20,8 @@
         "label": "設計共有",
         "url": "https://example.com/wiki/PRJ-001"
       }
-    ]
+    ],
+    "statusOverride": null
   },
   {
     "projectNumber": "PRJ-002",

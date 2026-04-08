@@ -255,8 +255,8 @@
     "name": "基礎検討",
     "startWeek": 1,
     "endWeek": 1,
-    "status": "完了",
-    "progress": 100,
+    "status": "進行中",
+    "progress": 80,
     "assigneeMemberId": "m1"
   },
   {
@@ -265,8 +265,8 @@
     "name": "基本設計",
     "startWeek": 2,
     "endWeek": 5,
-    "status": "完了",
-    "progress": 100,
+    "status": "未着手",
+    "progress": 0,
     "assigneeMemberId": "m1"
   },
   {
@@ -275,8 +275,8 @@
     "name": "詳細設計",
     "startWeek": 5,
     "endWeek": 7,
-    "status": "進行中",
-    "progress": 10,
+    "status": "未着手",
+    "progress": 0,
     "assigneeMemberId": "m1"
   },
   {
@@ -295,6 +295,16 @@
     "name": "移行",
     "startWeek": 11,
     "endWeek": 12,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-PRJ-001-6",
+    "projectId": "PRJ-001",
+    "name": "予備検討",
+    "startWeek": 13,
+    "endWeek": 13,
     "status": "未着手",
     "progress": 0,
     "assigneeMemberId": "m1"
