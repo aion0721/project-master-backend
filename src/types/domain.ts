@@ -79,6 +79,7 @@ export interface SystemRelation {
   id: string
   sourceSystemId: string
   targetSystemId: string
+  protocol?: string | null
   note?: string | null
 }
 
@@ -198,6 +199,7 @@ export interface CreateSystemInput {
 export interface CreateSystemRelationInput {
   sourceSystemId: string
   targetSystemId: string
+  protocol?: string | null
   note?: string | null
 }
 

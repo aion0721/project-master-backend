@@ -69,6 +69,7 @@ const createSystemSchema = z.object({
 const createSystemRelationSchema = z.object({
   sourceSystemId: z.string().trim().min(1),
   targetSystemId: z.string().trim().min(1),
+  protocol: z.string().trim().max(100).nullable().optional(),
   note: z.string().trim().max(500).nullable().optional(),
 })
 

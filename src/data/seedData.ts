@@ -168,18 +168,21 @@ export const seedSystemRelations: SystemRelation[] = [
     id: 'rel-001',
     sourceSystemId: 'sys-portal',
     targetSystemId: 'sys-accounting',
+    protocol: 'HTTPS',
     note: 'ポータルから会計基盤へ申請データを連携',
   },
   {
     id: 'rel-002',
     sourceSystemId: 'sys-logistics',
     targetSystemId: 'sys-accounting',
+    protocol: 'SFTP',
     note: '物流実績を会計仕訳へ受け渡し',
   },
   {
     id: 'rel-003',
     sourceSystemId: 'sys-mobile-app',
     targetSystemId: 'sys-sales-bi',
+    protocol: 'HTTPS',
     note: 'モバイル利用ログを分析基盤へ集約',
   },
 ]

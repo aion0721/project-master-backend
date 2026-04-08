@@ -678,6 +678,7 @@ export async function createSystemRelation(input: CreateSystemRelationInput) {
   return updateStore(['systemRelations'], (store) => {
     const sourceSystemId = input.sourceSystemId.trim()
     const targetSystemId = input.targetSystemId.trim()
+    const protocol = input.protocol?.trim() || null
     const note = input.note?.trim() || null
 
     if (!sourceSystemId || !targetSystemId) {
@@ -710,6 +711,7 @@ export async function createSystemRelation(input: CreateSystemRelationInput) {
       id: nextId,
       sourceSystemId,
       targetSystemId,
+      protocol,
       note,
     }
 

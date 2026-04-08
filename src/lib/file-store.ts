@@ -95,6 +95,7 @@ const systemRelationSchema = z.object({
   id: z.string().min(1),
   sourceSystemId: z.string().min(1),
   targetSystemId: z.string().min(1),
+  protocol: z.string().nullable().optional(),
   note: z.string().nullable().optional(),
 })
 
