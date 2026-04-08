@@ -18,6 +18,7 @@ import type {
   UpdateMemberInput,
   UpdateProjectEventsInput,
   UpdateProjectNoteInput,
+  UpdateProjectStatusEntriesInput,
   UpdateProjectReportStatusInput,
   UpdateProjectStatusOverrideInput,
   UpdatePhaseInput,
@@ -980,6 +981,28 @@ export async function updateProjectNote(projectId: string, input: UpdateProjectN
     }
 
     project.note = input.note?.trim() || null
+
+    return buildProjectDetailFromStore(projectId, store)
+  })
+}
+
+export async function updateProjectStatusEntries(
+  projectId: string,
+  input: UpdateProjectStatusEntriesInput,
+) {
+  return updateStore(['projects'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    project.statusEntries = input.statusEntries
+      .map((entry) => ({
+        date: entry.date.trim(),
+        content: entry.content.trim(),
+      }))
+      .filter((entry) => entry.date && entry.content)
 
     return buildProjectDetailFromStore(projectId, store)
   })

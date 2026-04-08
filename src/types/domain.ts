@@ -7,6 +7,11 @@ export interface ProjectLink {
   url: string
 }
 
+export interface ProjectStatusEntry {
+  date: string
+  content: string
+}
+
 export interface Project {
   projectNumber: string
   name: string
@@ -16,6 +21,7 @@ export interface Project {
   statusOverride?: ProjectStatusOverride | null
   pmMemberId: string
   note?: string | null
+  statusEntries?: ProjectStatusEntry[]
   hasReportItems?: boolean
   relatedSystemIds?: string[]
   projectLinks: ProjectLink[]
@@ -133,6 +139,10 @@ export interface UpdateProjectSystemsInput {
 
 export interface UpdateProjectNoteInput {
   note?: string | null
+}
+
+export interface UpdateProjectStatusEntriesInput {
+  statusEntries: ProjectStatusEntry[]
 }
 
 export interface UpdateProjectReportStatusInput {

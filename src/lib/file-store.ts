@@ -18,6 +18,7 @@ import type {
   Project,
   ProjectAssignment,
   ProjectEvent,
+  ProjectStatusEntry,
   ProjectStatus,
   SystemAssignment,
   SystemRelation,
@@ -32,6 +33,10 @@ const projectLinkSchema = z.object({
   label: z.string().min(1),
   url: z.string().url(),
 })
+const projectStatusEntrySchema = z.object({
+  date: z.string().date(),
+  content: z.string(),
+})
 
 const projectSchema = z
   .object({
@@ -42,9 +47,10 @@ const projectSchema = z
     status: projectStatusSchema,
     statusOverride: projectStatusSchema.nullable().optional(),
     pmMemberId: z.string().min(1),
-  note: z.string().nullable().optional(),
-  hasReportItems: z.boolean().optional().default(false),
-  relatedSystemIds: z.array(z.string().min(1)).optional().default([]),
+    note: z.string().nullable().optional(),
+    statusEntries: z.array(projectStatusEntrySchema).optional().default([]),
+    hasReportItems: z.boolean().optional().default(false),
+    relatedSystemIds: z.array(z.string().min(1)).optional().default([]),
     projectLinks: z.array(projectLinkSchema).optional(),
     projectLink: z.string().url().nullable().optional(),
   })
@@ -178,6 +184,7 @@ function cloneStore(store: StoreData): StoreData {
     projects: cloneEntries(store.projects).map((project) => ({
       ...project,
       relatedSystemIds: [...(project.relatedSystemIds ?? [])],
+      statusEntries: (project.statusEntries ?? []).map((entry: ProjectStatusEntry) => ({ ...entry })),
       projectLinks: project.projectLinks.map((link) => ({ ...link })),
     })),
     phases: cloneEntries(store.phases),
