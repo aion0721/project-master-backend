@@ -250,12 +250,152 @@
     "assigneeMemberId": "m6"
   },
   {
+    "id": "ph-sampleaaa-1",
+    "projectId": "sampleaaa",
+    "name": "基礎検討",
+    "startWeek": 1,
+    "endWeek": 2,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-sampleaaa-2",
+    "projectId": "sampleaaa",
+    "name": "基本設計",
+    "startWeek": 3,
+    "endWeek": 4,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-sampleaaa-3",
+    "projectId": "sampleaaa",
+    "name": "詳細設計",
+    "startWeek": 5,
+    "endWeek": 6,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-sampleaaa-4",
+    "projectId": "sampleaaa",
+    "name": "CT",
+    "startWeek": 7,
+    "endWeek": 7,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-sampleaaa-5",
+    "projectId": "sampleaaa",
+    "name": "ITa",
+    "startWeek": 8,
+    "endWeek": 8,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-bbbbbbbbbb-1",
+    "projectId": "bbbbbbbbbb",
+    "name": "予備検討",
+    "startWeek": 1,
+    "endWeek": 1,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-bbbbbbbbbb-2",
+    "projectId": "bbbbbbbbbb",
+    "name": "基礎検討",
+    "startWeek": 2,
+    "endWeek": 3,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-bbbbbbbbbb-3",
+    "projectId": "bbbbbbbbbb",
+    "name": "基本設計",
+    "startWeek": 4,
+    "endWeek": 5,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-bbbbbbbbbb-4",
+    "projectId": "bbbbbbbbbb",
+    "name": "詳細設計",
+    "startWeek": 6,
+    "endWeek": 7,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-bbbbbbbbbb-5",
+    "projectId": "bbbbbbbbbb",
+    "name": "CT",
+    "startWeek": 8,
+    "endWeek": 8,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-bbbbbbbbbb-6",
+    "projectId": "bbbbbbbbbb",
+    "name": "ITa",
+    "startWeek": 9,
+    "endWeek": 9,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-bbbbbbbbbb-7",
+    "projectId": "bbbbbbbbbb",
+    "name": "ITb",
+    "startWeek": 10,
+    "endWeek": 10,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-bbbbbbbbbb-8",
+    "projectId": "bbbbbbbbbb",
+    "name": "UAT",
+    "startWeek": 11,
+    "endWeek": 11,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
+    "id": "ph-bbbbbbbbbb-9",
+    "projectId": "bbbbbbbbbb",
+    "name": "移行",
+    "startWeek": 12,
+    "endWeek": 12,
+    "status": "未着手",
+    "progress": 0,
+    "assigneeMemberId": "m1"
+  },
+  {
     "id": "ph-p1-1",
     "projectId": "PRJ-001",
     "name": "基礎検討",
     "startWeek": 1,
     "endWeek": 1,
-    "status": "進行中",
+    "status": "完了",
     "progress": 80,
     "assigneeMemberId": "m1"
   },
@@ -265,7 +405,7 @@
     "name": "基本設計",
     "startWeek": 2,
     "endWeek": 5,
-    "status": "未着手",
+    "status": "進行中",
     "progress": 0,
     "assigneeMemberId": "m1"
   },

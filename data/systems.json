@@ -21,7 +21,11 @@
     "category": "分析",
     "ownerMemberId": "m1",
     "note": "営業実績と施策効果を可視化する分析基盤",
-    "systemLinks": []
+    "systemLinks": [],
+    "departmentNames": [
+      "アーキテクト室",
+      "PMO室"
+    ]
   },
   {
     "id": "sys-portal",

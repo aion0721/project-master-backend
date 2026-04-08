@@ -158,7 +158,7 @@
     "departmentCode": "sampe",
     "departmentName": "bbb",
     "role": "部長",
-    "managerId": null,
+    "managerId": "m10",
     "bookmarkedProjectIds": [],
     "defaultProjectStatusFilters": [
       "未着手",

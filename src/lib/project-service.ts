@@ -520,6 +520,7 @@ export async function createSystem(input: CreateSystemInput) {
     const name = input.name.trim()
     const category = input.category.trim()
     const ownerMemberId = input.ownerMemberId ?? null
+    const departmentNames = [...new Set((input.departmentNames ?? []).map((name) => name.trim()).filter(Boolean))]
     const note = input.note?.trim() || null
     const systemLinks = (input.systemLinks ?? []).map((link) => ({
       label: link.label.trim(),
@@ -543,6 +544,7 @@ export async function createSystem(input: CreateSystemInput) {
       name,
       category,
       ownerMemberId,
+      departmentNames,
       note,
       systemLinks,
     }
@@ -572,6 +574,7 @@ export async function updateSystem(systemId: string, input: UpdateSystemInput) {
     const name = input.name.trim()
     const category = input.category.trim()
     const ownerMemberId = input.ownerMemberId ?? null
+    const departmentNames = [...new Set((input.departmentNames ?? []).map((name) => name.trim()).filter(Boolean))]
     const note = input.note?.trim() || null
     const systemLinks = input.systemLinks?.map((link) => ({
       label: link.label.trim(),
@@ -589,6 +592,7 @@ export async function updateSystem(systemId: string, input: UpdateSystemInput) {
     system.name = name
     system.category = category
     system.ownerMemberId = ownerMemberId
+    system.departmentNames = departmentNames
     system.note = note
     if (systemLinks) {
       system.systemLinks = systemLinks

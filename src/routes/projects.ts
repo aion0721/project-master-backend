@@ -76,6 +76,7 @@ const createSystemSchema = z.object({
   name: z.string().trim().min(1).max(100),
   category: z.string().trim().min(1).max(100),
   ownerMemberId: z.string().min(1).nullable().optional(),
+  departmentNames: z.array(z.string().trim().min(1).max(100)).optional().default([]),
   note: z.string().trim().max(500).nullable().optional(),
   systemLinks: z.array(projectLinkSchema).optional().default([]),
 })
@@ -91,6 +92,7 @@ const updateSystemSchema = z.object({
   name: z.string().trim().min(1).max(100),
   category: z.string().trim().min(1).max(100),
   ownerMemberId: z.string().min(1).nullable().optional(),
+  departmentNames: z.array(z.string().trim().min(1).max(100)).optional().default([]),
   note: z.string().trim().max(500).nullable().optional(),
   systemLinks: z.array(projectLinkSchema).optional(),
 })

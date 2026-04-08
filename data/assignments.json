@@ -222,5 +222,19 @@
     "memberId": "m4",
     "responsibility": "インフラ統括",
     "reportsToMemberId": null
+  },
+  {
+    "id": "as-sampleaaa-1",
+    "projectId": "sampleaaa",
+    "memberId": "m1",
+    "responsibility": "PM",
+    "reportsToMemberId": null
+  },
+  {
+    "id": "as-bbbbbbbbbb-1",
+    "projectId": "bbbbbbbbbb",
+    "memberId": "m1",
+    "responsibility": "PM",
+    "reportsToMemberId": null
   }
 ]

@@ -74,6 +74,7 @@ export interface ManagedSystem {
   name: string
   category: string
   ownerMemberId?: string | null
+  departmentNames?: string[]
   note?: string | null
   systemLinks?: ProjectLink[]
 }
@@ -200,6 +201,7 @@ export interface CreateSystemInput {
   name: string
   category: string
   ownerMemberId?: string | null
+  departmentNames?: string[]
   note?: string | null
   systemLinks?: ProjectLink[]
 }
@@ -215,6 +217,7 @@ export interface UpdateSystemInput {
   name: string
   category: string
   ownerMemberId?: string | null
+  departmentNames?: string[]
   note?: string | null
   systemLinks?: ProjectLink[]
 }
