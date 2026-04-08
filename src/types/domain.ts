@@ -58,12 +58,21 @@ export interface ProjectAssignment {
   reportsToMemberId?: string | null
 }
 
+export interface SystemAssignment {
+  id: string
+  systemId: string
+  memberId: string
+  responsibility: string
+  reportsToMemberId?: string | null
+}
+
 export interface ManagedSystem {
   id: string
   name: string
   category: string
   ownerMemberId?: string | null
   note?: string | null
+  systemLinks?: ProjectLink[]
 }
 
 export interface SystemRelation {
@@ -165,12 +174,25 @@ export interface UpdateProjectStructureInput {
   assignments: ProjectStructureAssignmentInput[]
 }
 
+export interface SystemStructureAssignmentInput {
+  id?: string
+  memberId: string
+  responsibility: string
+  reportsToMemberId?: string | null
+}
+
+export interface UpdateSystemStructureInput {
+  ownerMemberId: string
+  assignments: SystemStructureAssignmentInput[]
+}
+
 export interface CreateSystemInput {
   id: string
   name: string
   category: string
   ownerMemberId?: string | null
   note?: string | null
+  systemLinks?: ProjectLink[]
 }
 
 export interface CreateSystemRelationInput {
@@ -184,4 +206,5 @@ export interface UpdateSystemInput {
   category: string
   ownerMemberId?: string | null
   note?: string | null
+  systemLinks?: ProjectLink[]
 }

@@ -7,6 +7,7 @@ import {
   seedMembers,
   seedPhases,
   seedProjects,
+  seedSystemAssignments,
   seedSystemRelations,
   seedSystems,
 } from '../data/seedData.js'
@@ -17,6 +18,7 @@ import type {
   Project,
   ProjectAssignment,
   ProjectEvent,
+  SystemAssignment,
   SystemRelation,
   WorkStatus,
 } from '../types/domain.js'
@@ -86,6 +88,7 @@ const systemSchema = z.object({
   category: z.string().min(1),
   ownerMemberId: z.string().min(1).nullable().optional(),
   note: z.string().nullable().optional(),
+  systemLinks: z.array(projectLinkSchema).optional().default([]),
 })
 
 const systemRelationSchema = z.object({
@@ -103,6 +106,14 @@ const assignmentSchema = z.object({
   reportsToMemberId: z.string().min(1).nullable().optional(),
 })
 
+const systemAssignmentSchema = z.object({
+  id: z.string().min(1),
+  systemId: z.string().min(1),
+  memberId: z.string().min(1),
+  responsibility: z.string().min(1),
+  reportsToMemberId: z.string().min(1).nullable().optional(),
+})
+
 const storeSchema = {
   projects: z.array(projectSchema),
   phases: z.array(phaseSchema),
@@ -111,6 +122,7 @@ const storeSchema = {
   systems: z.array(systemSchema),
   systemRelations: z.array(systemRelationSchema),
   assignments: z.array(assignmentSchema),
+  systemAssignments: z.array(systemAssignmentSchema),
 } as const
 
 type StoreKey = keyof typeof storeSchema
@@ -123,6 +135,7 @@ export interface StoreData {
   systems: ManagedSystem[]
   systemRelations: SystemRelation[]
   assignments: ProjectAssignment[]
+  systemAssignments: SystemAssignment[]
 }
 
 const dataDirectory = resolve(process.cwd(), 'data')
@@ -134,6 +147,7 @@ const filePaths: Record<StoreKey, string> = {
   systems: resolve(dataDirectory, 'systems.json'),
   systemRelations: resolve(dataDirectory, 'system-relations.json'),
   assignments: resolve(dataDirectory, 'assignments.json'),
+  systemAssignments: resolve(dataDirectory, 'system-assignments.json'),
 }
 
 const defaultData: StoreData = {
@@ -144,6 +158,7 @@ const defaultData: StoreData = {
   systems: seedSystems,
   systemRelations: seedSystemRelations,
   assignments: seedAssignments,
+  systemAssignments: seedSystemAssignments,
 }
 
 let cache: StoreData | null = null
@@ -171,6 +186,7 @@ function cloneStore(store: StoreData): StoreData {
     systems: cloneEntries(store.systems),
     systemRelations: cloneEntries(store.systemRelations),
     assignments: cloneEntries(store.assignments),
+    systemAssignments: cloneEntries(store.systemAssignments),
   }
 }
 
@@ -208,15 +224,17 @@ async function loadFromDisk(): Promise<StoreData> {
   await mkdir(dataDirectory, { recursive: true })
   await Promise.all((Object.keys(filePaths) as StoreKey[]).map((key) => ensureFileExists(key)))
 
-  const [projects, phases, events, members, systems, systemRelations, assignments] = await Promise.all([
-    readAndValidateFile('projects'),
-    readAndValidateFile('phases'),
-    readAndValidateFile('events'),
-    readAndValidateFile('members'),
-    readAndValidateFile('systems'),
-    readAndValidateFile('systemRelations'),
-    readAndValidateFile('assignments'),
-  ])
+  const [projects, phases, events, members, systems, systemRelations, assignments, systemAssignments] =
+    await Promise.all([
+      readAndValidateFile('projects'),
+      readAndValidateFile('phases'),
+      readAndValidateFile('events'),
+      readAndValidateFile('members'),
+      readAndValidateFile('systems'),
+      readAndValidateFile('systemRelations'),
+      readAndValidateFile('assignments'),
+      readAndValidateFile('systemAssignments'),
+    ])
 
   return {
     projects,
@@ -226,6 +244,7 @@ async function loadFromDisk(): Promise<StoreData> {
     systems,
     systemRelations,
     assignments,
+    systemAssignments,
   }
 }
 

@@ -11,6 +11,7 @@ import {
   getProjectDetail,
   listMembers,
   listProjects,
+  listSystemAssignments,
   listSystemRelations,
   listSystems,
   updateMember,
@@ -25,6 +26,7 @@ import {
   updateProjectSchedule,
   updateProjectStructure,
   updateSystem,
+  updateSystemStructure,
 } from '../lib/project-service.js'
 
 const projectLinkSchema = z.object({
@@ -61,6 +63,7 @@ const createSystemSchema = z.object({
   category: z.string().trim().min(1).max(100),
   ownerMemberId: z.string().min(1).nullable().optional(),
   note: z.string().trim().max(500).nullable().optional(),
+  systemLinks: z.array(projectLinkSchema).optional().default([]),
 })
 
 const createSystemRelationSchema = z.object({
@@ -74,6 +77,19 @@ const updateSystemSchema = z.object({
   category: z.string().trim().min(1).max(100),
   ownerMemberId: z.string().min(1).nullable().optional(),
   note: z.string().trim().max(500).nullable().optional(),
+  systemLinks: z.array(projectLinkSchema).optional(),
+})
+
+const updateSystemStructureSchema = z.object({
+  ownerMemberId: z.string().min(1),
+  assignments: z.array(
+    z.object({
+      id: z.string().min(1).optional(),
+      memberId: z.string().min(1),
+      responsibility: z.string().trim().min(1).max(100),
+      reportsToMemberId: z.string().min(1).nullable().optional(),
+    }),
+  ),
 })
 
 const createMemberSchema = z.object({
@@ -281,6 +297,12 @@ projectRoutes.get('/system-relations', async (c) =>
   }),
 )
 
+projectRoutes.get('/system-assignments', async (c) =>
+  c.json({
+    items: await listSystemAssignments(),
+  }),
+)
+
 projectRoutes.post('/systems', async (c) => {
   const body = await c.req.json()
   const parsed = createSystemSchema.safeParse(body)
@@ -363,6 +385,39 @@ projectRoutes.patch('/systems/:systemId', async (c) => {
     return c.json(result)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update system'
+    const status = message === 'System not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.patch('/systems/:systemId/structure', async (c) => {
+  const paramsSchema = z.object({
+    systemId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'systemId is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateSystemStructureSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await updateSystemStructure(parsedParams.data.systemId, parsedBody.data)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update system structure'
     const status = message === 'System not found' ? 404 : 400
     return c.json({ message }, status)
   }

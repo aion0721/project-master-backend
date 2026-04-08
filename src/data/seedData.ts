@@ -5,6 +5,7 @@
   Project,
   ProjectAssignment,
   ProjectEvent,
+  SystemAssignment,
   SystemRelation,
 } from '../types/domain.js'
 
@@ -118,6 +119,7 @@ export const seedSystems: ManagedSystem[] = [
     category: '基幹',
     ownerMemberId: 'm1',
     note: '会計仕訳と月次締め処理を担う基幹システム',
+    systemLinks: [{ label: '運用Wiki', url: 'https://example.com/systems/sys-accounting/wiki' }],
   },
   {
     id: 'sys-logistics',
@@ -125,6 +127,7 @@ export const seedSystems: ManagedSystem[] = [
     category: '物流',
     ownerMemberId: 'm6',
     note: '配送状況と倉庫在庫の横断監視ダッシュボード',
+    systemLinks: [{ label: '監視手順', url: 'https://example.com/systems/sys-logistics/ops' }],
   },
   {
     id: 'sys-sales-bi',
@@ -132,6 +135,7 @@ export const seedSystems: ManagedSystem[] = [
     category: '分析',
     ownerMemberId: 'm1',
     note: '営業実績と施策効果を可視化する分析基盤',
+    systemLinks: [{ label: '分析ポータル', url: 'https://example.com/systems/sys-sales-bi' }],
   },
   {
     id: 'sys-portal',
@@ -139,6 +143,7 @@ export const seedSystems: ManagedSystem[] = [
     category: '社内基盤',
     ownerMemberId: 'm6',
     note: '社内申請と情報共有の入口となるポータル',
+    systemLinks: [{ label: '利用ガイド', url: 'https://example.com/systems/sys-portal/guide' }],
   },
   {
     id: 'sys-mobile-app',
@@ -146,6 +151,7 @@ export const seedSystems: ManagedSystem[] = [
     category: 'チャネル',
     ownerMemberId: 'm1',
     note: '店頭販促向けのモバイルアプリ',
+    systemLinks: [{ label: 'アプリ仕様', url: 'https://example.com/systems/sys-mobile-app/spec' }],
   },
   {
     id: 'sys-infra-common',
@@ -153,6 +159,7 @@ export const seedSystems: ManagedSystem[] = [
     category: '基盤',
     ownerMemberId: 'm4',
     note: '複数案件が利用する共通基盤と運用環境',
+    systemLinks: [{ label: '構成図', url: 'https://example.com/systems/sys-infra-common/architecture' }],
   },
 ]
 
@@ -302,6 +309,65 @@ export const seedAssignments: ProjectAssignment[] = [
   { id: 'as-p5-4', projectId: 'PRJ-005', memberId: 'm10', responsibility: 'テスト', reportsToMemberId: 'm4' },
   { id: 'as-p5-5', projectId: 'PRJ-005', memberId: 'm7', responsibility: 'OS', reportsToMemberId: 'm4' },
   { id: 'as-p5-6', projectId: 'PRJ-005', memberId: 'm4', responsibility: 'インフラ統括', reportsToMemberId: 'm1' },
+]
+
+export const seedSystemAssignments: SystemAssignment[] = [
+  {
+    id: 'sys-as-1',
+    systemId: 'sys-accounting',
+    memberId: 'm1',
+    responsibility: 'オーナー',
+    reportsToMemberId: null,
+  },
+  {
+    id: 'sys-as-2',
+    systemId: 'sys-accounting',
+    memberId: 'm2',
+    responsibility: '業務窓口',
+    reportsToMemberId: 'm1',
+  },
+  {
+    id: 'sys-as-3',
+    systemId: 'sys-accounting',
+    memberId: 'm4',
+    responsibility: '運用統括',
+    reportsToMemberId: 'm1',
+  },
+  {
+    id: 'sys-as-4',
+    systemId: 'sys-accounting',
+    memberId: 'm7',
+    responsibility: '基盤担当',
+    reportsToMemberId: 'm4',
+  },
+  {
+    id: 'sys-as-5',
+    systemId: 'sys-accounting',
+    memberId: 'm5',
+    responsibility: '品質管理',
+    reportsToMemberId: 'm4',
+  },
+  {
+    id: 'sys-as-6',
+    systemId: 'sys-logistics',
+    memberId: 'm6',
+    responsibility: 'オーナー',
+    reportsToMemberId: null,
+  },
+  {
+    id: 'sys-as-7',
+    systemId: 'sys-logistics',
+    memberId: 'm3',
+    responsibility: 'アプリ担当',
+    reportsToMemberId: 'm6',
+  },
+  {
+    id: 'sys-as-8',
+    systemId: 'sys-logistics',
+    memberId: 'm10',
+    responsibility: '運用窓口',
+    reportsToMemberId: 'm6',
+  },
 ]
 
 export const seedEvents: ProjectEvent[] = [

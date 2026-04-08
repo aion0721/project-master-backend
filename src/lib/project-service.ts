@@ -12,6 +12,8 @@ import type {
   ProjectStructureAssignmentInput,
   ProjectAssignment,
   ProjectEvent,
+  SystemAssignment,
+  SystemStructureAssignmentInput,
   SystemRelation,
   UpdateMemberInput,
   UpdateProjectEventsInput,
@@ -23,6 +25,7 @@ import type {
   UpdateProjectPhasesInput,
   UpdateProjectScheduleInput,
   UpdateProjectStructureInput,
+  UpdateSystemStructureInput,
   UpdateSystemInput,
   WorkStatus,
 } from '../types/domain.js'
@@ -224,6 +227,21 @@ function createAssignmentIdGenerator(projectId: string, assignments: ProjectAssi
   }
 }
 
+function createSystemAssignmentIdGenerator(systemId: string, assignments: SystemAssignment[]) {
+  let nextSuffix =
+    assignments
+      .filter((assignment) => assignment.systemId === systemId)
+      .map((assignment) => Number(assignment.id.split('-').at(-1)))
+      .filter((value) => Number.isFinite(value))
+      .reduce((max, value) => Math.max(max, value), 0) + 1
+
+  return () => {
+    const nextId = `sys-as-${systemId}-${nextSuffix}`
+    nextSuffix += 1
+    return nextId
+  }
+}
+
 function createPhaseIdGenerator(projectId: string, phases: Phase[]) {
   let nextSuffix =
     phases
@@ -274,6 +292,35 @@ function normalizeStructureAssignments(
     ...inputAssignments.map((assignment) => ({
       id: assignment.id ?? nextAssignmentId(),
       projectId,
+      memberId: assignment.memberId,
+      responsibility: assignment.responsibility,
+      reportsToMemberId: assignment.reportsToMemberId ?? null,
+    })),
+  ]
+}
+
+function normalizeSystemStructureAssignments(
+  systemId: string,
+  inputAssignments: SystemStructureAssignmentInput[],
+  existingAssignments: SystemAssignment[],
+  ownerMemberId: string,
+) {
+  const nextAssignmentId = createSystemAssignmentIdGenerator(systemId, existingAssignments)
+  const existingOwnerAssignment = existingAssignments.find(
+    (assignment) => assignment.responsibility === 'オーナー',
+  )
+
+  return [
+    {
+      id: existingOwnerAssignment?.id ?? nextAssignmentId(),
+      systemId,
+      memberId: ownerMemberId,
+      responsibility: 'オーナー',
+      reportsToMemberId: null,
+    },
+    ...inputAssignments.map((assignment) => ({
+      id: assignment.id ?? nextAssignmentId(),
+      systemId,
       memberId: assignment.memberId,
       responsibility: assignment.responsibility,
       reportsToMemberId: assignment.reportsToMemberId ?? null,
@@ -397,6 +444,14 @@ export async function deleteMember(memberId: string) {
       throw new Error('Member has subordinates')
     }
 
+    if (store.systemAssignments.some((assignment) => assignment.memberId === memberId)) {
+      throw new Error('Member is assigned to a system')
+    }
+
+    if (store.systemAssignments.some((assignment) => assignment.reportsToMemberId === memberId)) {
+      throw new Error('Member is used in a system hierarchy')
+    }
+
     store.members = store.members.filter((item) => item.id !== memberId)
 
     return {
@@ -415,13 +470,22 @@ export async function listSystemRelations() {
   return store.systemRelations.map((relation) => ({ ...relation }))
 }
 
+export async function listSystemAssignments() {
+  const store = await getStore()
+  return store.systemAssignments.map((assignment) => ({ ...assignment }))
+}
+
 export async function createSystem(input: CreateSystemInput) {
-  return updateStore(['systems'], (store) => {
+  return updateStore(['systems', 'systemAssignments'], (store) => {
     const id = input.id.trim()
     const name = input.name.trim()
     const category = input.category.trim()
     const ownerMemberId = input.ownerMemberId ?? null
     const note = input.note?.trim() || null
+    const systemLinks = (input.systemLinks ?? []).map((link) => ({
+      label: link.label.trim(),
+      url: link.url.trim(),
+    }))
 
     if (!id || !name || !category) {
       throw new Error('System fields are required')
@@ -441,9 +505,19 @@ export async function createSystem(input: CreateSystemInput) {
       category,
       ownerMemberId,
       note,
+      systemLinks,
     }
 
     store.systems.push(system)
+    if (ownerMemberId) {
+      store.systemAssignments.push({
+        id: `sys-as-${id}-1`,
+        systemId: id,
+        memberId: ownerMemberId,
+        responsibility: 'オーナー',
+        reportsToMemberId: null,
+      })
+    }
     return { system }
   })
 }
@@ -460,6 +534,10 @@ export async function updateSystem(systemId: string, input: UpdateSystemInput) {
     const category = input.category.trim()
     const ownerMemberId = input.ownerMemberId ?? null
     const note = input.note?.trim() || null
+    const systemLinks = input.systemLinks?.map((link) => ({
+      label: link.label.trim(),
+      url: link.url.trim(),
+    }))
 
     if (!name || !category) {
       throw new Error('System fields are required')
@@ -473,13 +551,16 @@ export async function updateSystem(systemId: string, input: UpdateSystemInput) {
     system.category = category
     system.ownerMemberId = ownerMemberId
     system.note = note
+    if (systemLinks) {
+      system.systemLinks = systemLinks
+    }
 
     return { system: { ...system } }
   })
 }
 
 export async function deleteSystem(systemId: string) {
-  return updateStore(['systems'], (store) => {
+  return updateStore(['systems', 'systemAssignments'], (store) => {
     const system = getSystemById(systemId, store.systems)
 
     if (!system) {
@@ -499,7 +580,97 @@ export async function deleteSystem(systemId: string) {
     }
 
     store.systems = store.systems.filter((item) => item.id !== systemId)
+    store.systemAssignments = store.systemAssignments.filter(
+      (assignment) => assignment.systemId !== systemId,
+    )
     return { systemId }
+  })
+}
+
+export async function updateSystemStructure(systemId: string, input: UpdateSystemStructureInput) {
+  return updateStore(['systems', 'systemAssignments'], (store) => {
+    const system = getSystemById(systemId, store.systems)
+
+    if (!system) {
+      throw new Error('System not found')
+    }
+
+    if (!getMemberById(input.ownerMemberId, store.members)) {
+      throw new Error('System owner not found')
+    }
+
+    const participatingMemberIds = new Set<string>([input.ownerMemberId])
+
+    for (const assignment of input.assignments) {
+      if (!assignment.responsibility.trim()) {
+        throw new Error('responsibility is required')
+      }
+
+      if (!getMemberById(assignment.memberId, store.members)) {
+        throw new Error('Assigned member does not exist')
+      }
+
+      participatingMemberIds.add(assignment.memberId)
+    }
+
+    const memberParentMap = new Map<string, string | null>()
+
+    for (const assignment of input.assignments) {
+      if (assignment.reportsToMemberId && !participatingMemberIds.has(assignment.reportsToMemberId)) {
+        throw new Error('Hierarchy parent must be a system member')
+      }
+
+      if (assignment.reportsToMemberId === assignment.memberId) {
+        throw new Error('Member cannot report to themselves')
+      }
+
+      const nextParentId = assignment.reportsToMemberId ?? null
+      const currentParentId = memberParentMap.get(assignment.memberId)
+
+      if (currentParentId !== undefined && currentParentId !== nextParentId) {
+        throw new Error('A member must have a single hierarchy parent in the system')
+      }
+
+      memberParentMap.set(assignment.memberId, nextParentId)
+    }
+
+    for (const [memberId] of memberParentMap) {
+      const visited = new Set<string>([memberId])
+      let cursor = memberParentMap.get(memberId) ?? null
+
+      while (cursor) {
+        if (visited.has(cursor)) {
+          throw new Error('System hierarchy cannot contain cycles')
+        }
+
+        visited.add(cursor)
+        cursor = cursor === input.ownerMemberId ? null : (memberParentMap.get(cursor) ?? null)
+      }
+    }
+
+    system.ownerMemberId = input.ownerMemberId
+
+    const currentAssignments = store.systemAssignments.filter(
+      (assignment) => assignment.systemId === systemId,
+    )
+    const nextAssignments = normalizeSystemStructureAssignments(
+      systemId,
+      input.assignments.map((assignment) => ({
+        ...assignment,
+        responsibility: assignment.responsibility.trim(),
+      })),
+      currentAssignments,
+      input.ownerMemberId,
+    )
+
+    store.systemAssignments = store.systemAssignments
+      .filter((assignment) => assignment.systemId !== systemId)
+      .concat(nextAssignments)
+
+    return {
+      system: { ...system },
+      assignments: nextAssignments,
+    }
   })
 }
 
