@@ -26,6 +26,7 @@ import type {
   UpdateProjectSystemsInput,
   UpdateProjectPhasesInput,
   UpdateProjectScheduleInput,
+  UpdateProjectSummaryInput,
   UpdateProjectStructureInput,
   UpdateSystemStructureInput,
   UpdateSystemInput,
@@ -935,6 +936,56 @@ export async function updateProjectSchedule(projectId: string, input: UpdateProj
     project.endDate = input.endDate
 
     return buildProjectDetailFromStore(projectId, store)
+  })
+}
+
+export async function updateProjectSummary(projectId: string, input: UpdateProjectSummaryInput) {
+  return updateStore(['projects', 'phases', 'events', 'assignments'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    const nextProjectNumber = input.projectNumber.trim()
+    const nextProjectName = input.name.trim()
+
+    if (!nextProjectNumber || !nextProjectName) {
+      throw new Error('Project number and name are required')
+    }
+
+    if (
+      nextProjectNumber !== projectId &&
+      store.projects.some((item) => item.projectNumber === nextProjectNumber)
+    ) {
+      throw new Error('Project number already exists')
+    }
+
+    project.name = nextProjectName
+
+    if (nextProjectNumber !== projectId) {
+      project.projectNumber = nextProjectNumber
+
+      store.phases.forEach((phase) => {
+        if (phase.projectId === projectId) {
+          phase.projectId = nextProjectNumber
+        }
+      })
+
+      store.events.forEach((event) => {
+        if (event.projectId === projectId) {
+          event.projectId = nextProjectNumber
+        }
+      })
+
+      store.assignments.forEach((assignment) => {
+        if (assignment.projectId === projectId) {
+          assignment.projectId = nextProjectNumber
+        }
+      })
+    }
+
+    return buildProjectDetailFromStore(project.projectNumber, store)
   })
 }
 

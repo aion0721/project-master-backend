@@ -176,49 +176,49 @@
   },
   {
     "id": "as-p1-1",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "memberId": "m1",
     "responsibility": "PM",
     "reportsToMemberId": null
   },
   {
     "id": "as-p1-2",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "memberId": "m8",
     "responsibility": "基礎検討",
     "reportsToMemberId": null
   },
   {
     "id": "as-p1-3",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "memberId": "m2",
     "responsibility": "基本設計",
     "reportsToMemberId": "m1"
   },
   {
     "id": "as-p1-4",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "memberId": "m3",
     "responsibility": "詳細設計",
     "reportsToMemberId": null
   },
   {
     "id": "as-p1-5",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "memberId": "m7",
     "responsibility": "OS",
     "reportsToMemberId": null
   },
   {
     "id": "as-p1-6",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "memberId": "m5",
     "responsibility": "テスト",
     "reportsToMemberId": null
   },
   {
     "id": "as-p1-7",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "memberId": "m4",
     "responsibility": "インフラ統括",
     "reportsToMemberId": null

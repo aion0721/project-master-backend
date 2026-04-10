@@ -1,7 +1,7 @@
 [
   {
     "id": "ev-p1-1",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "name": "環境提供",
     "week": 4,
     "status": "完了",
@@ -10,7 +10,7 @@
   },
   {
     "id": "ev-p1-2",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "name": "レビュー会",
     "week": 6,
     "status": "進行中",

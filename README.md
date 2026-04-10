@@ -22,6 +22,7 @@ yarn dev
 - `GET /api/projects`
 - `POST /api/projects`
 - `GET /api/projects/:projectId`
+- `PATCH /api/projects/:projectId`
 - `PATCH /api/projects/:projectId/current-phase`
 - `PATCH /api/projects/:projectId/schedule`
 - `PATCH /api/projects/:projectId/links`

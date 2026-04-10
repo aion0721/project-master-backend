@@ -26,6 +26,7 @@ import {
   updateProjectSystems,
   updateProjectPhases,
   updateProjectSchedule,
+  updateProjectSummary,
   updateProjectStructure,
   updateSystem,
   updateSystemStructure,
@@ -152,6 +153,11 @@ const updateProjectScheduleSchema = z
     message: 'endDate must be greater than or equal to startDate',
     path: ['endDate'],
   })
+
+const updateProjectSummarySchema = z.object({
+  projectNumber: z.string().trim().min(1).max(50),
+  name: z.string().trim().min(1).max(100),
+})
 
 const updateProjectLinksSchema = z
   .object({
@@ -548,6 +554,41 @@ projectRoutes.get('/projects/:projectNumber', async (c) => {
   }
 
   return c.json(detail)
+})
+
+projectRoutes.patch('/projects/:projectNumber', async (c) => {
+  const paramsSchema = z.object({
+    projectNumber: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'projectNumber is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateProjectSummarySchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const detail = await updateProjectSummary(parsedParams.data.projectNumber, parsedBody.data)
+    return c.json(detail)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update project summary'
+    const status =
+      message === 'Project not found' ? 404 : 400
+
+    return c.json({ message }, status)
+  }
 })
 
 projectRoutes.patch('/projects/:projectNumber/current-phase', async (c) => {

@@ -129,6 +129,11 @@ export interface UpdateProjectScheduleInput {
   endDate: string
 }
 
+export interface UpdateProjectSummaryInput {
+  projectNumber: string
+  name: string
+}
+
 export interface UpdateProjectLinksInput {
   projectLinks: ProjectLink[]
 }

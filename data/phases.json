@@ -391,7 +391,7 @@
   },
   {
     "id": "ph-p1-1",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "name": "基礎検討",
     "startWeek": 1,
     "endWeek": 1,
@@ -401,7 +401,7 @@
   },
   {
     "id": "ph-p1-2",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "name": "基本設計",
     "startWeek": 2,
     "endWeek": 5,
@@ -411,7 +411,7 @@
   },
   {
     "id": "ph-p1-3",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "name": "詳細設計",
     "startWeek": 5,
     "endWeek": 7,
@@ -421,7 +421,7 @@
   },
   {
     "id": "ph-p1-4",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "name": "テスト",
     "startWeek": 8,
     "endWeek": 10,
@@ -431,7 +431,7 @@
   },
   {
     "id": "ph-p1-5",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "name": "移行",
     "startWeek": 11,
     "endWeek": 12,
@@ -441,7 +441,7 @@
   },
   {
     "id": "ph-PRJ-001-6",
-    "projectId": "PRJ-001",
+    "projectId": "PRJ-001-sam",
     "name": "予備検討",
     "startWeek": 13,
     "endWeek": 13,
