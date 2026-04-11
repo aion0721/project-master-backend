@@ -158,7 +158,22 @@
     "departmentCode": "sampe",
     "departmentName": "bbb",
     "role": "部長",
-    "managerId": "m10",
+    "managerId": "m1",
+    "bookmarkedProjectIds": [],
+    "defaultProjectStatusFilters": [
+      "未着手",
+      "進行中",
+      "遅延",
+      "完了"
+    ]
+  },
+  {
+    "id": "m20",
+    "name": "あああ",
+    "departmentCode": "aaa",
+    "departmentName": "アプリ開発部",
+    "role": "Role",
+    "managerId": null,
     "bookmarkedProjectIds": [],
     "defaultProjectStatusFilters": [
       "未着手",

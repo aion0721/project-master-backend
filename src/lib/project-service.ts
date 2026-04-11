@@ -392,6 +392,7 @@ export async function createMember(input: CreateMemberInput) {
     const departmentCode = input.departmentCode.trim()
     const departmentName = input.departmentName.trim()
     const role = input.role.trim()
+    const lineLabel = input.lineLabel?.trim() || undefined
 
     if (!memberId || !name || !departmentCode || !departmentName || !role) {
       throw new Error('Member fields are required')
@@ -411,6 +412,7 @@ export async function createMember(input: CreateMemberInput) {
       departmentCode,
       departmentName,
       role,
+      lineLabel,
       managerId: input.managerId,
       bookmarkedProjectIds: [],
       defaultProjectStatusFilters: ['未着手', '進行中', '遅延', '完了'],
@@ -436,6 +438,7 @@ export async function updateMember(memberId: string, input: UpdateMemberInput) {
     const departmentCode = input.departmentCode.trim()
     const departmentName = input.departmentName.trim()
     const role = input.role.trim()
+    const lineLabel = input.lineLabel?.trim() || undefined
 
     if (!name || !departmentCode || !departmentName || !role) {
       throw new Error('Member fields are required')
@@ -453,6 +456,7 @@ export async function updateMember(memberId: string, input: UpdateMemberInput) {
     member.departmentCode = departmentCode
     member.departmentName = departmentName
     member.role = role
+    member.lineLabel = lineLabel
     member.managerId = input.managerId
 
     return {

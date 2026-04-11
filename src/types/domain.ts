@@ -54,6 +54,7 @@ export interface Member {
   departmentCode: string
   departmentName: string
   role: string
+  lineLabel?: string
   managerId: string | null
   bookmarkedProjectIds: string[]
   defaultProjectStatusFilters?: ProjectStatus[]
@@ -113,6 +114,7 @@ export interface CreateMemberInput {
   departmentCode: string
   departmentName: string
   role: string
+  lineLabel?: string
   managerId: string | null
 }
 
@@ -121,6 +123,7 @@ export interface UpdateMemberInput {
   departmentCode: string
   departmentName: string
   role: string
+  lineLabel?: string
   managerId: string | null
 }
 

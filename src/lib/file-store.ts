@@ -86,6 +86,7 @@ const memberSchema = z.object({
   departmentCode: z.string().min(1),
   departmentName: z.string().min(1),
   role: z.string().min(1),
+  lineLabel: z.string().min(1).optional(),
   managerId: z.string().min(1).nullable(),
   bookmarkedProjectIds: z.array(z.string().min(1)).optional().default([]),
   defaultProjectStatusFilters: z.array(projectStatusSchema).optional().default([...allWorkStatuses]),

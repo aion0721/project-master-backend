@@ -175,6 +175,20 @@
     "reportsToMemberId": "m6"
   },
   {
+    "id": "as-sampleaaa-1",
+    "projectId": "sampleaaa",
+    "memberId": "m1",
+    "responsibility": "PM",
+    "reportsToMemberId": null
+  },
+  {
+    "id": "as-bbbbbbbbbb-1",
+    "projectId": "bbbbbbbbbb",
+    "memberId": "m1",
+    "responsibility": "PM",
+    "reportsToMemberId": null
+  },
+  {
     "id": "as-p1-1",
     "projectId": "PRJ-001-sam",
     "memberId": "m1",
@@ -214,27 +228,13 @@
     "projectId": "PRJ-001-sam",
     "memberId": "m5",
     "responsibility": "テスト",
-    "reportsToMemberId": null
+    "reportsToMemberId": "m7"
   },
   {
     "id": "as-p1-7",
     "projectId": "PRJ-001-sam",
     "memberId": "m4",
     "responsibility": "インフラ統括",
-    "reportsToMemberId": null
-  },
-  {
-    "id": "as-sampleaaa-1",
-    "projectId": "sampleaaa",
-    "memberId": "m1",
-    "responsibility": "PM",
-    "reportsToMemberId": null
-  },
-  {
-    "id": "as-bbbbbbbbbb-1",
-    "projectId": "bbbbbbbbbb",
-    "memberId": "m1",
-    "responsibility": "PM",
     "reportsToMemberId": null
   }
 ]
