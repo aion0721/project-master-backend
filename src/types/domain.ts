@@ -94,6 +94,48 @@ export interface SystemRelation {
   note?: string | null
 }
 
+export interface SystemTransaction {
+  id: string
+  name: string
+  dataLabel: string
+  note?: string | null
+}
+
+export interface SystemTransactionStep {
+  id: string
+  transactionId: string
+  relationId: string
+  sourceSystemId: string
+  targetSystemId: string
+  stepOrder: number
+  actionLabel?: string | null
+  note?: string | null
+}
+
+export interface SystemTransactionStepInput {
+  id?: string
+  relationId: string
+  sourceSystemId: string
+  targetSystemId: string
+  stepOrder: number
+  actionLabel?: string | null
+  note?: string | null
+}
+
+export interface CreateSystemTransactionInput {
+  name: string
+  dataLabel: string
+  note?: string | null
+  steps: SystemTransactionStepInput[]
+}
+
+export interface UpdateSystemTransactionInput {
+  name: string
+  dataLabel: string
+  note?: string | null
+  steps: SystemTransactionStepInput[]
+}
+
 export interface CreateProjectInput {
   projectNumber: string
   name: string
@@ -225,6 +267,13 @@ export interface CreateSystemInput {
 }
 
 export interface CreateSystemRelationInput {
+  sourceSystemId: string
+  targetSystemId: string
+  protocol?: string | null
+  note?: string | null
+}
+
+export interface UpdateSystemRelationInput {
   sourceSystemId: string
   targetSystemId: string
   protocol?: string | null

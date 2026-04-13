@@ -4,15 +4,19 @@ import {
   createMember,
   createProject,
   createSystemRelation,
+  createSystemTransaction,
   createSystem,
   deleteMember,
   deleteSystemRelation,
+  deleteSystemTransaction,
   deleteSystem,
   getProjectDetail,
   listMembers,
   listProjects,
   listSystemAssignments,
   listSystemRelations,
+  listSystemTransactions,
+  listSystemTransactionSteps,
   listSystems,
   updateMember,
   updatePhase,
@@ -28,8 +32,10 @@ import {
   updateProjectSchedule,
   updateProjectSummary,
   updateProjectStructure,
+  updateSystemRelation,
   updateSystem,
   updateSystemStructure,
+  updateSystemTransaction,
 } from '../lib/project-service.js'
 
 const projectLinkSchema = z.object({
@@ -89,6 +95,27 @@ const createSystemRelationSchema = z.object({
   protocol: z.string().trim().max(100).nullable().optional(),
   note: z.string().trim().max(500).nullable().optional(),
 })
+
+const updateSystemRelationSchema = createSystemRelationSchema
+
+const systemTransactionStepSchema = z.object({
+  id: z.string().min(1).optional(),
+  relationId: z.string().trim().min(1),
+  sourceSystemId: z.string().trim().min(1),
+  targetSystemId: z.string().trim().min(1),
+  stepOrder: z.number().int().min(1),
+  actionLabel: z.string().trim().max(100).nullable().optional(),
+  note: z.string().trim().max(500).nullable().optional(),
+})
+
+const createSystemTransactionSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  dataLabel: z.string().trim().min(1).max(100),
+  note: z.string().trim().max(500).nullable().optional(),
+  steps: z.array(systemTransactionStepSchema).min(1),
+})
+
+const updateSystemTransactionSchema = createSystemTransactionSchema
 
 const updateSystemSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -342,6 +369,45 @@ projectRoutes.get('/system-assignments', async (c) =>
   }),
 )
 
+projectRoutes.get('/system-transactions', async (c) =>
+  c.json({
+    items: await listSystemTransactions(),
+  }),
+)
+
+projectRoutes.get('/system-transaction-steps', async (c) =>
+  c.json({
+    items: await listSystemTransactionSteps(),
+  }),
+)
+
+projectRoutes.post('/system-transactions', async (c) => {
+  const body = await c.req.json()
+  const parsed = createSystemTransactionSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsed.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await createSystemTransaction(parsed.data)
+    return c.json(result, 201)
+  } catch (error) {
+    return c.json(
+      {
+        message: error instanceof Error ? error.message : 'Failed to create system transaction',
+      },
+      400,
+    )
+  }
+})
+
 projectRoutes.post('/systems', async (c) => {
   const body = await c.req.json()
   const parsed = createSystemSchema.safeParse(body)
@@ -393,6 +459,39 @@ projectRoutes.post('/system-relations', async (c) => {
       },
       400,
     )
+  }
+})
+
+projectRoutes.patch('/system-relations/:relationId', async (c) => {
+  const paramsSchema = z.object({
+    relationId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'relationId is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateSystemRelationSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await updateSystemRelation(parsedParams.data.relationId, parsedBody.data)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update system relation'
+    const status = message === 'System relation not found' ? 404 : 400
+    return c.json({ message }, status)
   }
 })
 
@@ -498,6 +597,59 @@ projectRoutes.delete('/system-relations/:relationId', async (c) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete system relation'
     const status = message === 'System relation not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.patch('/system-transactions/:transactionId', async (c) => {
+  const paramsSchema = z.object({
+    transactionId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'transactionId is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateSystemTransactionSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await updateSystemTransaction(parsedParams.data.transactionId, parsedBody.data)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update system transaction'
+    const status = message === 'System transaction not found' ? 404 : 400
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.delete('/system-transactions/:transactionId', async (c) => {
+  const paramsSchema = z.object({
+    transactionId: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'transactionId is invalid' }, 400)
+  }
+
+  try {
+    const result = await deleteSystemTransaction(parsedParams.data.transactionId)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete system transaction'
+    const status = message === 'System transaction not found' ? 404 : 400
     return c.json({ message }, status)
   }
 })

@@ -7,6 +7,8 @@
   ProjectEvent,
   SystemAssignment,
   SystemRelation,
+  SystemTransaction,
+  SystemTransactionStep,
 } from '../types/domain.js'
 
 export const seedMembers: Member[] = [
@@ -188,6 +190,93 @@ export const seedSystemRelations: SystemRelation[] = [
     targetSystemId: 'sys-sales-bi',
     protocol: 'HTTPS',
     note: 'モバイル利用ログを分析基盤へ集約',
+  },
+  {
+    id: 'rel-004',
+    sourceSystemId: 'sys-accounting',
+    targetSystemId: 'sys-sales-bi',
+    protocol: 'HTTPS',
+    note: '会計基盤で確定した申請・実績データを分析基盤へ連携',
+  },
+]
+
+export const seedSystemTransactions: SystemTransaction[] = [
+  {
+    id: 'tx-001',
+    name: '申請データ連携',
+    dataLabel: '申請番号',
+    note: '社内ポータルで受け付けた申請を会計処理まで引き渡す。',
+  },
+  {
+    id: 'tx-002',
+    name: '物流実績反映',
+    dataLabel: '出荷実績',
+    note: '物流ダッシュボードの実績を会計仕訳に利用する。',
+  },
+  {
+    id: 'tx-003',
+    name: '販促利用分析',
+    dataLabel: '利用ログ',
+    note: 'モバイルの操作ログを分析基盤へ集約する。',
+  },
+  {
+    id: 'tx-004',
+    name: '申請データ分析連携',
+    dataLabel: '申請集計データ',
+    note: '会計基盤で確定した申請データを営業管理BIへ二次利用連携する。',
+  },
+]
+
+export const seedSystemTransactionSteps: SystemTransactionStep[] = [
+  {
+    id: 'tx-step-001',
+    transactionId: 'tx-001',
+    relationId: 'rel-001',
+    sourceSystemId: 'sys-portal',
+    targetSystemId: 'sys-accounting',
+    stepOrder: 1,
+    actionLabel: '受付データ送信',
+    note: '申請番号と申請内容を会計基盤へ渡す。',
+  },
+  {
+    id: 'tx-step-002',
+    transactionId: 'tx-002',
+    relationId: 'rel-002',
+    sourceSystemId: 'sys-logistics',
+    targetSystemId: 'sys-accounting',
+    stepOrder: 1,
+    actionLabel: '実績反映',
+    note: '出荷確定データを仕訳生成の元データとして送信する。',
+  },
+  {
+    id: 'tx-step-003',
+    transactionId: 'tx-003',
+    relationId: 'rel-003',
+    sourceSystemId: 'sys-mobile-app',
+    targetSystemId: 'sys-sales-bi',
+    stepOrder: 1,
+    actionLabel: 'ログ集約',
+    note: '利用ログを分析基盤へ送る。',
+  },
+  {
+    id: 'tx-step-004',
+    transactionId: 'tx-004',
+    relationId: 'rel-001',
+    sourceSystemId: 'sys-portal',
+    targetSystemId: 'sys-accounting',
+    stepOrder: 1,
+    actionLabel: '申請取り込み',
+    note: 'ポータル入力値を会計基盤で受け付ける。',
+  },
+  {
+    id: 'tx-step-005',
+    transactionId: 'tx-004',
+    relationId: 'rel-004',
+    sourceSystemId: 'sys-accounting',
+    targetSystemId: 'sys-sales-bi',
+    stepOrder: 2,
+    actionLabel: '集計データ送信',
+    note: '会計基盤で確定した申請データをBIに連携する。',
   },
 ]
 

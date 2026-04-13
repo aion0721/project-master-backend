@@ -9,6 +9,8 @@ import {
   seedProjects,
   seedSystemAssignments,
   seedSystemRelations,
+  seedSystemTransactions,
+  seedSystemTransactionSteps,
   seedSystems,
 } from '../data/seedData.js'
 import type {
@@ -22,6 +24,8 @@ import type {
   ProjectStatus,
   SystemAssignment,
   SystemRelation,
+  SystemTransaction,
+  SystemTransactionStep,
   WorkStatus,
 } from '../types/domain.js'
 
@@ -109,6 +113,24 @@ const systemRelationSchema = z.object({
   note: z.string().nullable().optional(),
 })
 
+const systemTransactionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  dataLabel: z.string().min(1),
+  note: z.string().nullable().optional(),
+})
+
+const systemTransactionStepSchema = z.object({
+  id: z.string().min(1),
+  transactionId: z.string().min(1),
+  relationId: z.string().min(1),
+  sourceSystemId: z.string().min(1),
+  targetSystemId: z.string().min(1),
+  stepOrder: z.number().int().min(1),
+  actionLabel: z.string().nullable().optional(),
+  note: z.string().nullable().optional(),
+})
+
 const assignmentSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
@@ -132,6 +154,8 @@ const storeSchema = {
   members: z.array(memberSchema),
   systems: z.array(systemSchema),
   systemRelations: z.array(systemRelationSchema),
+  systemTransactions: z.array(systemTransactionSchema),
+  systemTransactionSteps: z.array(systemTransactionStepSchema),
   assignments: z.array(assignmentSchema),
   systemAssignments: z.array(systemAssignmentSchema),
 } as const
@@ -145,6 +169,8 @@ export interface StoreData {
   members: Member[]
   systems: ManagedSystem[]
   systemRelations: SystemRelation[]
+  systemTransactions: SystemTransaction[]
+  systemTransactionSteps: SystemTransactionStep[]
   assignments: ProjectAssignment[]
   systemAssignments: SystemAssignment[]
 }
@@ -157,6 +183,8 @@ const filePaths: Record<StoreKey, string> = {
   members: resolve(dataDirectory, 'members.json'),
   systems: resolve(dataDirectory, 'systems.json'),
   systemRelations: resolve(dataDirectory, 'system-relations.json'),
+  systemTransactions: resolve(dataDirectory, 'system-transactions.json'),
+  systemTransactionSteps: resolve(dataDirectory, 'system-transaction-steps.json'),
   assignments: resolve(dataDirectory, 'assignments.json'),
   systemAssignments: resolve(dataDirectory, 'system-assignments.json'),
 }
@@ -168,6 +196,8 @@ const defaultData: StoreData = {
   members: seedMembers,
   systems: seedSystems,
   systemRelations: seedSystemRelations,
+  systemTransactions: seedSystemTransactions,
+  systemTransactionSteps: seedSystemTransactionSteps,
   assignments: seedAssignments,
   systemAssignments: seedSystemAssignments,
 }
@@ -197,6 +227,8 @@ function cloneStore(store: StoreData): StoreData {
     })),
     systems: cloneEntries(store.systems),
     systemRelations: cloneEntries(store.systemRelations),
+    systemTransactions: cloneEntries(store.systemTransactions),
+    systemTransactionSteps: cloneEntries(store.systemTransactionSteps),
     assignments: cloneEntries(store.assignments),
     systemAssignments: cloneEntries(store.systemAssignments),
   }
@@ -236,7 +268,18 @@ async function loadFromDisk(): Promise<StoreData> {
   await mkdir(dataDirectory, { recursive: true })
   await Promise.all((Object.keys(filePaths) as StoreKey[]).map((key) => ensureFileExists(key)))
 
-  const [projects, phases, events, members, systems, systemRelations, assignments, systemAssignments] =
+  const [
+    projects,
+    phases,
+    events,
+    members,
+    systems,
+    systemRelations,
+    systemTransactions,
+    systemTransactionSteps,
+    assignments,
+    systemAssignments,
+  ] =
     await Promise.all([
       readAndValidateFile('projects'),
       readAndValidateFile('phases'),
@@ -244,6 +287,8 @@ async function loadFromDisk(): Promise<StoreData> {
       readAndValidateFile('members'),
       readAndValidateFile('systems'),
       readAndValidateFile('systemRelations'),
+      readAndValidateFile('systemTransactions'),
+      readAndValidateFile('systemTransactionSteps'),
       readAndValidateFile('assignments'),
       readAndValidateFile('systemAssignments'),
     ])
@@ -255,6 +300,8 @@ async function loadFromDisk(): Promise<StoreData> {
     members,
     systems,
     systemRelations,
+    systemTransactions,
+    systemTransactionSteps,
     assignments,
     systemAssignments,
   }

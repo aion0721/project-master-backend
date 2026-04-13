@@ -3,6 +3,7 @@ import type {
   CreateMemberInput,
   CreateProjectInput,
   CreateSystemRelationInput,
+  CreateSystemTransactionInput,
   CreateSystemInput,
   ManagedSystem,
   Member,
@@ -15,6 +16,9 @@ import type {
   SystemAssignment,
   SystemStructureAssignmentInput,
   SystemRelation,
+  SystemTransaction,
+  SystemTransactionStep,
+  SystemTransactionStepInput,
   UpdateMemberInput,
   UpdateProjectEventsInput,
   UpdateProjectNoteInput,
@@ -28,7 +32,9 @@ import type {
   UpdateProjectScheduleInput,
   UpdateProjectSummaryInput,
   UpdateProjectStructureInput,
+  UpdateSystemRelationInput,
   UpdateSystemStructureInput,
+  UpdateSystemTransactionInput,
   UpdateSystemInput,
   ProjectStatus,
   WorkStatus,
@@ -111,6 +117,10 @@ function getSystemById(systemId: string, systems: ManagedSystem[]) {
 
 function getSystemRelationById(relationId: string, systemRelations: SystemRelation[]) {
   return systemRelations.find((relation) => relation.id === relationId)
+}
+
+function getSystemTransactionById(transactionId: string, systemTransactions: SystemTransaction[]) {
+  return systemTransactions.find((transaction) => transaction.id === transactionId)
 }
 
 function getProjectPhases(projectId: string, phases: Phase[]) {
@@ -282,6 +292,34 @@ function createSystemAssignmentIdGenerator(systemId: string, assignments: System
   }
 }
 
+function createSystemTransactionIdGenerator(transactions: SystemTransaction[]) {
+  let nextSuffix =
+    transactions
+      .map((transaction) => Number(transaction.id.replace('tx-', '')))
+      .filter((value) => Number.isFinite(value))
+      .reduce((max, value) => Math.max(max, value), 0) + 1
+
+  return () => {
+    const nextId = `tx-${String(nextSuffix).padStart(3, '0')}`
+    nextSuffix += 1
+    return nextId
+  }
+}
+
+function createSystemTransactionStepIdGenerator(steps: SystemTransactionStep[]) {
+  let nextSuffix =
+    steps
+      .map((step) => Number(step.id.replace('tx-step-', '')))
+      .filter((value) => Number.isFinite(value))
+      .reduce((max, value) => Math.max(max, value), 0) + 1
+
+  return () => {
+    const nextId = `tx-step-${String(nextSuffix).padStart(3, '0')}`
+    nextSuffix += 1
+    return nextId
+  }
+}
+
 function createPhaseIdGenerator(projectId: string, phases: Phase[]) {
   let nextSuffix =
     phases
@@ -366,6 +404,73 @@ function normalizeSystemStructureAssignments(
       reportsToMemberId: assignment.reportsToMemberId ?? null,
     })),
   ]
+}
+
+function normalizeSystemTransactionSteps(
+  transactionId: string,
+  inputSteps: SystemTransactionStepInput[],
+  existingSteps: SystemTransactionStep[],
+) {
+  const nextStepId = createSystemTransactionStepIdGenerator(existingSteps)
+
+  return inputSteps
+    .slice()
+    .sort((left, right) => left.stepOrder - right.stepOrder)
+    .map((step) => ({
+      id: step.id ?? nextStepId(),
+      transactionId,
+      relationId: step.relationId,
+      sourceSystemId: step.sourceSystemId,
+      targetSystemId: step.targetSystemId,
+      stepOrder: step.stepOrder,
+      actionLabel: step.actionLabel?.trim() || null,
+      note: step.note?.trim() || null,
+    }))
+}
+
+function validateSystemTransactionSteps(
+  inputSteps: SystemTransactionStepInput[],
+  store: StoreData,
+) {
+  if (inputSteps.length === 0) {
+    throw new Error('At least one transaction step is required')
+  }
+
+  const stepOrders = new Set<number>()
+
+  for (const step of inputSteps) {
+    if (!Number.isInteger(step.stepOrder) || step.stepOrder < 1) {
+      throw new Error('Transaction step order must be a positive integer')
+    }
+
+    if (stepOrders.has(step.stepOrder)) {
+      throw new Error('Transaction step order must be unique')
+    }
+
+    stepOrders.add(step.stepOrder)
+
+    const relation = getSystemRelationById(step.relationId, store.systemRelations)
+
+    if (!relation) {
+      throw new Error('Referenced system relation does not exist')
+    }
+
+    if (!getSystemById(step.sourceSystemId, store.systems) || !getSystemById(step.targetSystemId, store.systems)) {
+      throw new Error('Referenced system in transaction step does not exist')
+    }
+
+    if (relation.sourceSystemId !== step.sourceSystemId || relation.targetSystemId !== step.targetSystemId) {
+      throw new Error('Transaction step must match the referenced system relation')
+    }
+  }
+
+  const orderedSteps = inputSteps.slice().sort((left, right) => left.stepOrder - right.stepOrder)
+
+  orderedSteps.forEach((step, index) => {
+    if (index > 0 && orderedSteps[index - 1]!.targetSystemId !== step.sourceSystemId) {
+      throw new Error('Transaction steps must connect in sequence')
+    }
+  })
 }
 
 function syncProjectStatus(projectId: string, store: StoreData) {
@@ -520,6 +625,123 @@ export async function listSystemAssignments() {
   return store.systemAssignments.map((assignment) => ({ ...assignment }))
 }
 
+export async function listSystemTransactions() {
+  const store = await getStore()
+  return store.systemTransactions.map((transaction: SystemTransaction) => ({ ...transaction }))
+}
+
+export async function listSystemTransactionSteps() {
+  const store = await getStore()
+  return store.systemTransactionSteps.map((step: SystemTransactionStep) => ({ ...step }))
+}
+
+export async function createSystemTransaction(input: CreateSystemTransactionInput) {
+  return updateStore(['systemTransactions', 'systemTransactionSteps'], (store) => {
+    const name = input.name.trim()
+    const dataLabel = input.dataLabel.trim()
+    const note = input.note?.trim() || null
+
+    if (!name || !dataLabel) {
+      throw new Error('System transaction fields are required')
+    }
+
+    validateSystemTransactionSteps(input.steps, store)
+
+    const nextTransactionId = createSystemTransactionIdGenerator(store.systemTransactions)
+    const transactionId = nextTransactionId()
+    const transaction: SystemTransaction = {
+      id: transactionId,
+      name,
+      dataLabel,
+      note,
+    }
+
+    const steps = normalizeSystemTransactionSteps(
+      transactionId,
+      input.steps.map((step) => ({
+        ...step,
+        relationId: step.relationId.trim(),
+        sourceSystemId: step.sourceSystemId.trim(),
+        targetSystemId: step.targetSystemId.trim(),
+      })),
+      store.systemTransactionSteps,
+    )
+
+    store.systemTransactions.push(transaction)
+    store.systemTransactionSteps.push(...steps)
+
+    return {
+      transaction,
+      steps,
+    }
+  })
+}
+
+export async function updateSystemTransaction(
+  transactionId: string,
+  input: UpdateSystemTransactionInput,
+) {
+  return updateStore(['systemTransactions', 'systemTransactionSteps'], (store) => {
+    const transaction = getSystemTransactionById(transactionId, store.systemTransactions)
+
+    if (!transaction) {
+      throw new Error('System transaction not found')
+    }
+
+    const name = input.name.trim()
+    const dataLabel = input.dataLabel.trim()
+    const note = input.note?.trim() || null
+
+    if (!name || !dataLabel) {
+      throw new Error('System transaction fields are required')
+    }
+
+    validateSystemTransactionSteps(input.steps, store)
+
+    transaction.name = name
+    transaction.dataLabel = dataLabel
+    transaction.note = note
+
+    const currentSteps = store.systemTransactionSteps.filter((step) => step.transactionId === transactionId)
+    const nextSteps = normalizeSystemTransactionSteps(
+      transactionId,
+      input.steps.map((step) => ({
+        ...step,
+        relationId: step.relationId.trim(),
+        sourceSystemId: step.sourceSystemId.trim(),
+        targetSystemId: step.targetSystemId.trim(),
+      })),
+      currentSteps.length > 0 ? currentSteps : store.systemTransactionSteps,
+    )
+
+    store.systemTransactionSteps = store.systemTransactionSteps
+      .filter((step) => step.transactionId !== transactionId)
+      .concat(nextSteps)
+
+    return {
+      transaction: { ...transaction },
+      steps: nextSteps,
+    }
+  })
+}
+
+export async function deleteSystemTransaction(transactionId: string) {
+  return updateStore(['systemTransactions', 'systemTransactionSteps'], (store) => {
+    const transaction = getSystemTransactionById(transactionId, store.systemTransactions)
+
+    if (!transaction) {
+      throw new Error('System transaction not found')
+    }
+
+    store.systemTransactions = store.systemTransactions.filter((item) => item.id !== transactionId)
+    store.systemTransactionSteps = store.systemTransactionSteps.filter(
+      (step) => step.transactionId !== transactionId,
+    )
+
+    return { transactionId }
+  })
+}
+
 export async function createSystem(input: CreateSystemInput) {
   return updateStore(['systems', 'systemAssignments'], (store) => {
     const id = input.id.trim()
@@ -626,6 +848,14 @@ export async function deleteSystem(systemId: string) {
       )
     ) {
       throw new Error('System is linked to a system relation')
+    }
+
+    if (
+      store.systemTransactionSteps.some(
+        (step) => step.sourceSystemId === systemId || step.targetSystemId === systemId,
+      )
+    ) {
+      throw new Error('System is linked to a system transaction')
     }
 
     store.systems = store.systems.filter((item) => item.id !== systemId)
@@ -770,12 +1000,71 @@ export async function createSystemRelation(input: CreateSystemRelationInput) {
   })
 }
 
+export async function updateSystemRelation(relationId: string, input: UpdateSystemRelationInput) {
+  return updateStore(['systemRelations'], (store) => {
+    const relation = getSystemRelationById(relationId, store.systemRelations)
+
+    if (!relation) {
+      throw new Error('System relation not found')
+    }
+
+    const sourceSystemId = input.sourceSystemId.trim()
+    const targetSystemId = input.targetSystemId.trim()
+    const protocol = input.protocol?.trim() || null
+    const note = input.note?.trim() || null
+
+    if (!sourceSystemId || !targetSystemId) {
+      throw new Error('System relation fields are required')
+    }
+
+    if (sourceSystemId === targetSystemId) {
+      throw new Error('System relation cannot point to the same system')
+    }
+
+    if (!getSystemById(sourceSystemId, store.systems) || !getSystemById(targetSystemId, store.systems)) {
+      throw new Error('System in relation does not exist')
+    }
+
+    if (
+      store.systemRelations.some(
+        (item) =>
+          item.id !== relationId &&
+          item.sourceSystemId === sourceSystemId &&
+          item.targetSystemId === targetSystemId,
+      )
+    ) {
+      throw new Error('System relation already exists')
+    }
+
+    const directionChanged =
+      relation.sourceSystemId !== sourceSystemId || relation.targetSystemId !== targetSystemId
+
+    if (
+      directionChanged &&
+      store.systemTransactionSteps.some((step) => step.relationId === relationId)
+    ) {
+      throw new Error('System relation source/target cannot be changed while linked to a system transaction')
+    }
+
+    relation.sourceSystemId = sourceSystemId
+    relation.targetSystemId = targetSystemId
+    relation.protocol = protocol
+    relation.note = note
+
+    return { relation: { ...relation } }
+  })
+}
+
 export async function deleteSystemRelation(relationId: string) {
   return updateStore(['systemRelations'], (store) => {
     const relation = getSystemRelationById(relationId, store.systemRelations)
 
     if (!relation) {
       throw new Error('System relation not found')
+    }
+
+    if (store.systemTransactionSteps.some((step) => step.relationId === relationId)) {
+      throw new Error('System relation is linked to a system transaction')
     }
 
     store.systemRelations = store.systemRelations.filter((item) => item.id !== relationId)
