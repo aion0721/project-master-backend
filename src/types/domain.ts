@@ -12,6 +12,8 @@ export interface ProjectStatusEntry {
   content: string
 }
 
+export type ProjectDepartmentRole = '主管' | '実行' | '支援' | '利用'
+
 export interface Project {
   projectNumber: string
   name: string
@@ -25,6 +27,15 @@ export interface Project {
   hasReportItems?: boolean
   relatedSystemIds?: string[]
   projectLinks: ProjectLink[]
+}
+
+export interface ProjectDepartmentAssignment {
+  id: string
+  projectId: string
+  departmentCode: string
+  departmentName: string
+  role: ProjectDepartmentRole
+  note?: string | null
 }
 
 export interface Phase {
@@ -185,6 +196,16 @@ export interface UpdateProjectLinksInput {
 
 export interface UpdateProjectSystemsInput {
   relatedSystemIds: string[]
+}
+
+export interface UpdateProjectDepartmentsInput {
+  departments: Array<{
+    id?: string
+    departmentCode: string
+    departmentName: string
+    role: ProjectDepartmentRole
+    note?: string | null
+  }>
 }
 
 export interface UpdateProjectNoteInput {

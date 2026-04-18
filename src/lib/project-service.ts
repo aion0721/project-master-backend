@@ -10,6 +10,7 @@ import type {
   Phase,
   Project,
   ProjectLink,
+  ProjectDepartmentAssignment,
   ProjectStructureAssignmentInput,
   ProjectAssignment,
   ProjectEvent,
@@ -22,6 +23,7 @@ import type {
   UpdateMemberInput,
   UpdateProjectEventsInput,
   UpdateProjectNoteInput,
+  UpdateProjectDepartmentsInput,
   UpdateProjectStatusEntriesInput,
   UpdateProjectReportStatusInput,
   UpdateProjectStatusOverrideInput,
@@ -131,6 +133,10 @@ function getProjectEvents(projectId: string, events: ProjectEvent[]) {
   return events.filter((event) => event.projectId === projectId)
 }
 
+function getProjectDepartments(projectId: string, projectDepartments: ProjectDepartmentAssignment[]) {
+  return projectDepartments.filter((department) => department.projectId === projectId)
+}
+
 function getCurrentPhase(projectPhases: Phase[]) {
   return (
     projectPhases.find((phase) => phase.status === '進行中' || phase.status === '遅延') ??
@@ -230,6 +236,7 @@ function buildProjectDetailFromStore(projectId: string, store: StoreData) {
   const projectAssignments = store.assignments.filter(
     (assignment) => assignment.projectId === project.projectNumber,
   )
+  const projectDepartments = getProjectDepartments(project.projectNumber, store.projectDepartments)
   const projectEvents = getProjectEvents(project.projectNumber, store.events)
   const relevantMemberIds = new Set([
     project.pmMemberId,
@@ -256,6 +263,7 @@ function buildProjectDetailFromStore(projectId: string, store: StoreData) {
       ...assignment,
       member: enrichMember(getMemberById(assignment.memberId, store.members), store.members),
     })),
+    projectDepartments: projectDepartments.map((department) => ({ ...department })),
     members: store.members
       .filter((member) => relevantMemberIds.has(member.id))
       .map((member) => enrichMember(member, store.members)),
@@ -1088,6 +1096,22 @@ export async function listProjects() {
   })
 }
 
+export async function listProjectDepartments() {
+  const store = await getStore()
+  return store.projectDepartments.map((department) => ({ ...department }))
+}
+
+export async function getProjectDepartmentAssignments(projectId: string) {
+  const store = await getStore()
+  const project = store.projects.find((item) => item.projectNumber === projectId)
+
+  if (!project) {
+    return null
+  }
+
+  return getProjectDepartments(projectId, store.projectDepartments).map((department) => ({ ...department }))
+}
+
 export async function getProjectDetail(projectId: string) {
   const store = await getStore()
   return buildProjectDetailFromStore(projectId, store)
@@ -1233,7 +1257,7 @@ export async function updateProjectSchedule(projectId: string, input: UpdateProj
 }
 
 export async function updateProjectSummary(projectId: string, input: UpdateProjectSummaryInput) {
-  return updateStore(['projects', 'phases', 'events', 'assignments'], (store) => {
+  return updateStore(['projects', 'phases', 'events', 'assignments', 'projectDepartments'], (store) => {
     const project = store.projects.find((item) => item.projectNumber === projectId)
 
     if (!project) {
@@ -1276,9 +1300,51 @@ export async function updateProjectSummary(projectId: string, input: UpdateProje
           assignment.projectId = nextProjectNumber
         }
       })
+
+      store.projectDepartments.forEach((department) => {
+        if (department.projectId === projectId) {
+          department.projectId = nextProjectNumber
+        }
+      })
     }
 
     return buildProjectDetailFromStore(project.projectNumber, store)
+  })
+}
+
+export async function updateProjectDepartments(projectId: string, input: UpdateProjectDepartmentsInput) {
+  return updateStore(['projectDepartments'], (store) => {
+    const project = store.projects.find((item) => item.projectNumber === projectId)
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    const nextDepartments = input.departments.map((department, index) => {
+      const departmentCode = department.departmentCode.trim()
+      const departmentName = department.departmentName.trim()
+
+      if (!departmentCode || !departmentName) {
+        throw new Error('Project department fields are required')
+      }
+
+      return {
+        id: department.id?.trim() || `proj-dept-${projectId}-${index + 1}`,
+        projectId,
+        departmentCode,
+        departmentName,
+        role: department.role,
+        note: department.note?.trim() || null,
+      }
+    })
+
+    store.projectDepartments = store.projectDepartments
+      .filter((department) => department.projectId !== projectId)
+      .concat(nextDepartments)
+
+    return {
+      projectDepartments: nextDepartments.map((department) => ({ ...department })),
+    }
   })
 }
 

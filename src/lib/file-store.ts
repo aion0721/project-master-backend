@@ -6,6 +6,7 @@ import {
   seedEvents,
   seedMembers,
   seedPhases,
+  seedProjectDepartments,
   seedProjects,
   seedSystemAssignments,
   seedSystemRelations,
@@ -18,6 +19,7 @@ import type {
   Member,
   Phase,
   Project,
+  ProjectDepartmentAssignment,
   ProjectAssignment,
   ProjectEvent,
   ProjectStatusEntry,
@@ -139,6 +141,17 @@ const assignmentSchema = z.object({
   reportsToMemberId: z.string().min(1).nullable().optional(),
 })
 
+const projectDepartmentRoleSchema = z.enum(['主管', '実行', '支援', '利用'])
+
+const projectDepartmentSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  departmentCode: z.string().min(1),
+  departmentName: z.string().min(1),
+  role: projectDepartmentRoleSchema,
+  note: z.string().nullable().optional(),
+})
+
 const systemAssignmentSchema = z.object({
   id: z.string().min(1),
   systemId: z.string().min(1),
@@ -157,6 +170,7 @@ const storeSchema = {
   systemTransactions: z.array(systemTransactionSchema),
   systemTransactionSteps: z.array(systemTransactionStepSchema),
   assignments: z.array(assignmentSchema),
+  projectDepartments: z.array(projectDepartmentSchema),
   systemAssignments: z.array(systemAssignmentSchema),
 } as const
 
@@ -172,6 +186,7 @@ export interface StoreData {
   systemTransactions: SystemTransaction[]
   systemTransactionSteps: SystemTransactionStep[]
   assignments: ProjectAssignment[]
+  projectDepartments: ProjectDepartmentAssignment[]
   systemAssignments: SystemAssignment[]
 }
 
@@ -186,6 +201,7 @@ const filePaths: Record<StoreKey, string> = {
   systemTransactions: resolve(dataDirectory, 'system-transactions.json'),
   systemTransactionSteps: resolve(dataDirectory, 'system-transaction-steps.json'),
   assignments: resolve(dataDirectory, 'assignments.json'),
+  projectDepartments: resolve(dataDirectory, 'project-departments.json'),
   systemAssignments: resolve(dataDirectory, 'system-assignments.json'),
 }
 
@@ -199,6 +215,7 @@ const defaultData: StoreData = {
   systemTransactions: seedSystemTransactions,
   systemTransactionSteps: seedSystemTransactionSteps,
   assignments: seedAssignments,
+  projectDepartments: seedProjectDepartments,
   systemAssignments: seedSystemAssignments,
 }
 
@@ -230,6 +247,7 @@ function cloneStore(store: StoreData): StoreData {
     systemTransactions: cloneEntries(store.systemTransactions),
     systemTransactionSteps: cloneEntries(store.systemTransactionSteps),
     assignments: cloneEntries(store.assignments),
+    projectDepartments: cloneEntries(store.projectDepartments),
     systemAssignments: cloneEntries(store.systemAssignments),
   }
 }
@@ -278,6 +296,7 @@ async function loadFromDisk(): Promise<StoreData> {
     systemTransactions,
     systemTransactionSteps,
     assignments,
+    projectDepartments,
     systemAssignments,
   ] =
     await Promise.all([
@@ -290,6 +309,7 @@ async function loadFromDisk(): Promise<StoreData> {
       readAndValidateFile('systemTransactions'),
       readAndValidateFile('systemTransactionSteps'),
       readAndValidateFile('assignments'),
+      readAndValidateFile('projectDepartments'),
       readAndValidateFile('systemAssignments'),
     ])
 
@@ -303,6 +323,7 @@ async function loadFromDisk(): Promise<StoreData> {
     systemTransactions,
     systemTransactionSteps,
     assignments,
+    projectDepartments,
     systemAssignments,
   }
 }

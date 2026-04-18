@@ -10,8 +10,10 @@ import {
   deleteSystemRelation,
   deleteSystemTransaction,
   deleteSystem,
+  getProjectDepartmentAssignments,
   getProjectDetail,
   listMembers,
+  listProjectDepartments,
   listProjects,
   listSystemAssignments,
   listSystemRelations,
@@ -21,6 +23,7 @@ import {
   updateMember,
   updatePhase,
   updateProjectCurrentPhase,
+  updateProjectDepartments,
   updateProjectEvents,
   updateProjectLinks,
   updateProjectNote,
@@ -186,6 +189,20 @@ const updateProjectScheduleSchema = z
 const updateProjectSummarySchema = z.object({
   projectNumber: z.string().trim().min(1).max(50),
   name: z.string().trim().min(1).max(100),
+})
+
+const projectDepartmentRoleSchema = z.enum(['主管', '実行', '支援', '利用'])
+
+const updateProjectDepartmentsSchema = z.object({
+  departments: z.array(
+    z.object({
+      id: z.string().trim().min(1).optional(),
+      departmentCode: z.string().trim().min(1).max(50),
+      departmentName: z.string().trim().min(1).max(100),
+      role: projectDepartmentRoleSchema,
+      note: z.string().trim().max(500).nullable().optional(),
+    }),
+  ),
 })
 
 const updateProjectLinksSchema = z
@@ -660,6 +677,12 @@ projectRoutes.get('/projects', async (c) =>
   }),
 )
 
+projectRoutes.get('/project-departments', async (c) =>
+  c.json({
+    items: await listProjectDepartments(),
+  }),
+)
+
 projectRoutes.post('/projects', async (c) => {
   const body = await c.req.json()
   const parsed = createProjectSchema.safeParse(body)
@@ -710,6 +733,27 @@ projectRoutes.get('/projects/:projectNumber', async (c) => {
   return c.json(detail)
 })
 
+projectRoutes.get('/projects/:projectNumber/departments', async (c) => {
+  const paramsSchema = z.object({
+    projectNumber: z.string().min(1),
+  })
+  const parsed = paramsSchema.safeParse(c.req.param())
+
+  if (!parsed.success) {
+    return c.json({ message: 'projectNumber is invalid' }, 400)
+  }
+
+  const departments = await getProjectDepartmentAssignments(parsed.data.projectNumber)
+
+  if (!departments) {
+    return c.json({ message: 'Project not found' }, 404)
+  }
+
+  return c.json({
+    items: departments,
+  })
+})
+
 projectRoutes.patch('/projects/:projectNumber', async (c) => {
   const paramsSchema = z.object({
     projectNumber: z.string().min(1),
@@ -740,6 +784,40 @@ projectRoutes.patch('/projects/:projectNumber', async (c) => {
     const message = error instanceof Error ? error.message : 'Failed to update project summary'
     const status =
       message === 'Project not found' ? 404 : 400
+
+    return c.json({ message }, status)
+  }
+})
+
+projectRoutes.patch('/projects/:projectNumber/departments', async (c) => {
+  const paramsSchema = z.object({
+    projectNumber: z.string().min(1),
+  })
+  const parsedParams = paramsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    return c.json({ message: 'projectNumber is invalid' }, 400)
+  }
+
+  const body = await c.req.json()
+  const parsedBody = updateProjectDepartmentsSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return c.json(
+      {
+        message: 'Request body is invalid',
+        issues: parsedBody.error.issues,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await updateProjectDepartments(parsedParams.data.projectNumber, parsedBody.data)
+    return c.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update project departments'
+    const status = message === 'Project not found' ? 404 : 400
 
     return c.json({ message }, status)
   }
