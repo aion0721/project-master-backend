@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { z } from 'zod'
+import { isValidProjectLinkTarget } from './project-link-target.js'
 import {
   seedAssignments,
   seedEvents,
@@ -37,7 +38,9 @@ const projectStatusSchema = z.enum(allWorkStatuses)
 const workStatusSchema = z.enum(['未着手', '進行中', '遅延', '完了'])
 const projectLinkSchema = z.object({
   label: z.string().min(1),
-  url: z.string().url(),
+  url: z.string().refine((value) => isValidProjectLinkTarget(value), {
+    message: '有効な URL またはネットワークパスを入力してください。',
+  }),
 })
 const projectStatusEntrySchema = z.object({
   date: z.string().date(),
@@ -58,7 +61,13 @@ const projectSchema = z
     hasReportItems: z.boolean().optional().default(false),
     relatedSystemIds: z.array(z.string().min(1)).optional().default([]),
     projectLinks: z.array(projectLinkSchema).optional(),
-    projectLink: z.string().url().nullable().optional(),
+    projectLink: z
+      .string()
+      .refine((value) => isValidProjectLinkTarget(value), {
+        message: '有効な URL またはネットワークパスを入力してください。',
+      })
+      .nullable()
+      .optional(),
   })
   .transform(({ projectLink, projectLinks, ...project }) => ({
     ...project,

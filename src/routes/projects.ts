@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
+import { isValidProjectLinkTarget } from '../lib/project-link-target.js'
 import {
   createMember,
   createProject,
@@ -43,7 +44,13 @@ import {
 
 const projectLinkSchema = z.object({
   label: z.string().trim().min(1).max(100),
-  url: z.string().trim().url().max(500),
+  url: z
+    .string()
+    .trim()
+    .max(500)
+    .refine((value) => isValidProjectLinkTarget(value), {
+      message: '有効な URL またはネットワークパスを入力してください。',
+    }),
 })
 
 const workStatusSchema = z.enum(['未着手', '進行中', '完了', '遅延'])
