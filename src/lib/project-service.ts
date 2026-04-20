@@ -121,6 +121,27 @@ function getSystemRelationById(relationId: string, systemRelations: SystemRelati
   return systemRelations.find((relation) => relation.id === relationId)
 }
 
+function normalizeMemberTags(tags: string[] | undefined) {
+  const seen = new Set<string>()
+
+  return (tags ?? [])
+    .map((tag) => tag.trim())
+    .filter((tag) => {
+      if (!tag) {
+        return false
+      }
+
+      const normalizedTag = tag.toLocaleLowerCase('ja')
+
+      if (seen.has(normalizedTag)) {
+        return false
+      }
+
+      seen.add(normalizedTag)
+      return true
+    })
+}
+
 function getSystemTransactionById(transactionId: string, systemTransactions: SystemTransaction[]) {
   return systemTransactions.find((transaction) => transaction.id === transactionId)
 }
@@ -505,6 +526,7 @@ export async function createMember(input: CreateMemberInput) {
     const departmentCode = input.departmentCode.trim()
     const departmentName = input.departmentName.trim()
     const role = input.role.trim()
+    const tags = normalizeMemberTags(input.tags)
     const lineLabel = input.lineLabel?.trim() || undefined
 
     if (!memberId || !name || !departmentCode || !departmentName || !role) {
@@ -525,6 +547,7 @@ export async function createMember(input: CreateMemberInput) {
       departmentCode,
       departmentName,
       role,
+      tags,
       lineLabel,
       managerId: input.managerId,
       bookmarkedProjectIds: [],
@@ -551,6 +574,7 @@ export async function updateMember(memberId: string, input: UpdateMemberInput) {
     const departmentCode = input.departmentCode.trim()
     const departmentName = input.departmentName.trim()
     const role = input.role.trim()
+    const tags = normalizeMemberTags(input.tags)
     const lineLabel = input.lineLabel?.trim() || undefined
 
     if (!name || !departmentCode || !departmentName || !role) {
@@ -569,6 +593,7 @@ export async function updateMember(memberId: string, input: UpdateMemberInput) {
     member.departmentCode = departmentCode
     member.departmentName = departmentName
     member.role = role
+    member.tags = tags
     member.lineLabel = lineLabel
     member.managerId = input.managerId
 

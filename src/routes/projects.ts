@@ -154,6 +154,7 @@ const createMemberSchema = z.object({
   departmentCode: z.string().trim().min(1).max(50),
   departmentName: z.string().trim().min(1).max(100),
   role: z.string().trim().min(1).max(100),
+  tags: z.array(z.string().trim().min(1).max(50)).optional().default([]),
   lineLabel: z.string().trim().max(100).optional(),
   managerId: z.string().min(1).nullable(),
 })
@@ -163,6 +164,7 @@ const updateMemberSchema = z.object({
   departmentCode: z.string().trim().min(1).max(50),
   departmentName: z.string().trim().min(1).max(100),
   role: z.string().trim().min(1).max(100),
+  tags: z.array(z.string().trim().min(1).max(50)).optional().default([]),
   lineLabel: z.string().trim().max(100).optional(),
   managerId: z.string().min(1).nullable(),
 })

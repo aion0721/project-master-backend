@@ -101,6 +101,7 @@ const memberSchema = z.object({
   departmentCode: z.string().min(1),
   departmentName: z.string().min(1),
   role: z.string().min(1),
+  tags: z.array(z.string().min(1)).optional().default([]),
   lineLabel: z.string().min(1).optional(),
   managerId: z.string().min(1).nullable(),
   bookmarkedProjectIds: z.array(z.string().min(1)).optional().default([]),
@@ -248,6 +249,7 @@ function cloneStore(store: StoreData): StoreData {
     events: cloneEntries(store.events),
     members: cloneEntries(store.members).map((member) => ({
       ...member,
+      tags: [...member.tags],
       bookmarkedProjectIds: [...member.bookmarkedProjectIds],
       defaultProjectStatusFilters: [...(member.defaultProjectStatusFilters ?? allWorkStatuses)],
     })),

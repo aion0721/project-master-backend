@@ -21,6 +21,7 @@ function cloneMember(
 
   return {
     ...member,
+    tags: [...(member.tags ?? [])],
     bookmarkedProjectIds: [...(member.bookmarkedProjectIds ?? [])],
     defaultProjectStatusFilters: allWorkStatuses.filter((status) =>
       defaultProjectStatusFilters.includes(status),
